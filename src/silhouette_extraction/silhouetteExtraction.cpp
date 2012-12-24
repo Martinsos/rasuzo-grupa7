@@ -16,13 +16,13 @@ void fillHoles(Mat&, Mat&);
 
 int blurf1 = 5;
 int blurf2 = 5;
-int thresh = 15;
+int thresh = 10;
 void thresh_callback(int, void*);
 
 Mat a, b, bin;
 
 int main() {
-    a = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200040.jpg", 1);
+    a = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200030.jpg", 1);
     b = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200015.jpg", 1);
 
     //extractSilhouette(a, b, bin, blurf1, blurf2);
