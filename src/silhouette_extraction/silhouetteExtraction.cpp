@@ -10,7 +10,7 @@ using namespace std;
 using namespace cv;
 
 void extractSilhouette(Mat&, Mat&, Mat&, int, int, int);
-void contours(Mat&, Mat&);
+void fillHoles(Mat&, Mat&);
 
 int blurf1 = 3;
 int blurf2 = 5;
@@ -20,7 +20,7 @@ void thresh_callback(int, void*);
 Mat a, b, bin;
 
 int main() {
-    a = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200170.jpg", 1);
+    a = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200030.jpg", 1);
     b = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200013.jpg", 1);
 
     //extractSilhouette(a, b, bin, blurf1, blurf2);
@@ -48,6 +48,7 @@ void thresh_callback(int, void* ) {
 }
 
 void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh) {
+    // convert image and background to BW and blur them(to reduce noise)
     Mat imgBW, bkgBW;
     Mat imgBL, bkgBL;
     cvtColor(img, imgBW, CV_BGR2GRAY);
@@ -55,32 +56,37 @@ void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, 
     blur(imgBW, imgBL, Size(blurf1, blurf1));
     blur(bkgBW, bkgBL, Size(blurf1, blurf1));
     
+    // diff = background - image. blur diff.
     Mat diff;
     blur(bkgBL - imgBL, diff, Size(blurf2, blurf2));
     
+    // find median of diff
     vector<unsigned short> vals;
     for (int i = 0; i < diff.rows; i++)
 	for (int j = 0; j < diff.cols; j++)
 	    vals.push_back(diff.at<ushort>(i, j));
     sort(vals.begin(), vals.end());
-    unsigned short th = vals[vals.size()/2];
+    unsigned short median = vals[vals.size()/2];
 
+    // binarize image -> 255 is silhouette, 0 is background. Use median as threshold.
     Mat bin;
-    threshold(diff, bin, th+thresh, 255, CV_THRESH_BINARY);
-    binary = bin;
+    threshold(diff, bin, median+thresh, 255, CV_THRESH_BINARY);
+
+    // fill holes
+    Mat binFull;
+    fillHoles(bin, binFull);
+    
+    binary = binFull;
 }
 
-void contours(Mat& img, Mat& conts) {
+/*
+ * 
+ */
+void fillHoles(Mat& src, Mat& dst) {
     vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    /// Find contours
-    findContours( img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
-    /// Draw contours
-    Mat drawing = Mat::zeros( img.size(), CV_8UC3 );
-    for( int i = 0; i< contours.size(); i++ ) {
-	Scalar color = Scalar(255,255,255);
-	drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
-    }
-    cvtColor(drawing, conts, CV_BGR2GRAY);
+    Mat src_ = Mat(src);
+    findContours(src_, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    dst = Mat::zeros(src_.size(), src_.type());
+    drawContours(dst, contours, -1, Scalar::all(255), CV_FILLED);
 }
 
