@@ -10,18 +10,20 @@ using namespace std;
 using namespace cv;
 
 void extractSilhouette(Mat&, Mat&, Mat&, int, int, int);
+void extractSilhouette2(Mat&, Mat&, Mat&, int, int, int);
+unsigned char medianBW(Mat&);
 void fillHoles(Mat&, Mat&);
 
-int blurf1 = 3;
+int blurf1 = 5;
 int blurf2 = 5;
-int thresh = 30;
+int thresh = 15;
 void thresh_callback(int, void*);
 
 Mat a, b, bin;
 
 int main() {
-    a = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200030.jpg", 1);
-    b = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200013.jpg", 1);
+    a = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200040.jpg", 1);
+    b = imread("/home/martin/rasuzo-grupa7/RASUZOslikeSmanjene/PC200015.jpg", 1);
 
     //extractSilhouette(a, b, bin, blurf1, blurf2);
 
@@ -37,12 +39,14 @@ int main() {
     createTrackbar( "thresh", "Slika1", &thresh, 255, thresh_callback);
     thresh_callback( 0, 0 );
 
+    //imwrite("silhouette.jpg", bin);
+
     waitKey(0);
     return 0;
 }
 
 void thresh_callback(int, void* ) {
-    extractSilhouette(a, b, bin, blurf1, blurf2, thresh);
+    extractSilhouette2(a, b, bin, blurf1, blurf2, thresh);
     namedWindow("Binary", CV_WINDOW_AUTOSIZE);
     imshow("Binary", bin);   
 }
@@ -57,16 +61,66 @@ void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, 
     blur(bkgBW, bkgBL, Size(blurf1, blurf1));
     
     // diff = background - image. blur diff.
-    Mat diff;
-    blur(bkgBL - imgBL, diff, Size(blurf2, blurf2));
+    Mat diff, diffBL;
+    absdiff(bkgBL, imgBL, diff);
+    blur(diff, diffBL, Size(blurf2, blurf2));
     
-    // find median of diff
+    // find median of diffBL
     vector<unsigned short> vals;
-    for (int i = 0; i < diff.rows; i++)
-	for (int j = 0; j < diff.cols; j++)
-	    vals.push_back(diff.at<ushort>(i, j));
+    for (int i = 0; i < diffBL.rows; i++)
+	for (int j = 0; j < diffBL.cols; j++)
+	    vals.push_back(diffBL.at<uchar>(i, j));
     sort(vals.begin(), vals.end());
-    unsigned short median = vals[vals.size()/2];
+    unsigned char median = vals[vals.size()/2];
+
+    // binarize image -> 255 is silhouette, 0 is background. Use median as threshold.
+    Mat bin;
+    threshold(diffBL, bin, median+thresh, 255, CV_THRESH_BINARY);
+
+    // fill holes
+    Mat binFull;
+    fillHoles(bin, binFull);
+    
+    binary = binFull;
+}
+
+void extractSilhouette2(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh) {
+    // blur input images
+    Mat img_, bkg_;
+    blur(img, img_, Size(blurf1, blurf1));
+    blur(bkg, bkg_, Size(blurf1, blurf1));
+    
+    // separate input images into channels (rgb)
+    vector<Mat> chsImg;
+    split(img_, chsImg);
+    vector<Mat> chsBkg;
+    split(bkg_, chsBkg);
+    
+    // find difference for each channel
+    vector<Mat> diffs(3);
+    for (int i = 0; i < 3; i++)
+	absdiff(chsBkg[i], chsImg[i], diffs[i]);
+
+    // blur differences
+    vector<Mat> diffsBl(3);
+    for (int i = 0; i < 3; i++)
+	blur(diffs[i], diffsBl[i], Size(blurf2, blurf2));
+    
+    /*
+    // find medians of diffBl
+    vector<usigned char> medians(3);
+    for (int i = 0; i < 3; i++)
+	medians[i] = medianBW(diffsBl[i]);
+    */
+    
+    // take maximum difference for each pixel.
+    Mat diff_, diff;
+    max(diffsBl[0], diffsBl[1], diff_);
+    max(diffsBl[2], diff_, diff);
+    //diff = (diffsBl[0]+diffsBl[1]+diffsBl[2])/3;
+
+    // find median
+    unsigned char median = medianBW(diff);
 
     // binarize image -> 255 is silhouette, 0 is background. Use median as threshold.
     Mat bin;
@@ -77,6 +131,16 @@ void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, 
     fillHoles(bin, binFull);
     
     binary = binFull;
+}
+
+unsigned char medianBW(Mat& img) {
+    vector<unsigned char> vals;
+    for (int i = 0; i < img.rows; i++)
+	for (int j = 0; j < img.cols; j++)
+	    vals.push_back(img.at<uchar>(i, j));
+    sort(vals.begin(), vals.end());
+    unsigned char median = vals[vals.size()/2];
+    return median;
 }
 
 /*
