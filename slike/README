@@ -1,0 +1,8 @@
+Slike su slikane aparatom OLYMPUS DIGITAL CAMERA SP570UZ.
+Originalne dimenzije slika su 3648px(širina) x 2736px(visina).
+Dvije su serije slika: prva je serija slikana unutra, a druga serija vani.
+Pri slikanju pre serije je korišten blic, pri slikanju druge serije nije korišten blic.
+
+Slike u ovom direktoriju dobivene su iz originalnih slika smanjivanjem na 30% originalne velicine.
+Pri tome je koristen program imagemagick, naredba "mogrify -resize 30% -format jpg *" čime se smanje sve slike u direktoriju.
+Dimenzije slika u ovom direktoriju su 1094px(širina) x 821px(visina).
