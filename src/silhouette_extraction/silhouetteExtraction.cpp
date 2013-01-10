@@ -6,6 +6,7 @@
 #include<vector>
 #include<algorithm>
 #include<queue>
+#include<utility>
 
 using namespace std;
 using namespace cv;
@@ -16,13 +17,15 @@ unsigned char medianBW(Mat&);
 void fillHoles(Mat&, Mat&);
 int floodFill(Mat&, Point2i, unsigned char);
 void extractLargestBlob(Mat&);
+pair<int, int> findBestTranslation(Mat&, Mat&, int, int, int, int);
+void calibrateImage(Mat&, Mat&, Mat&);
 
 int blurf1 = 5;
 int blurf2 = 5;
 int thresh = 10;
 void thresh_callback(int, void*);
 
-Mat a, b, bin;
+Mat a, aCal, b, bin;
 
 
 void printUsage() {
@@ -38,15 +41,26 @@ int main(int argc, char** argv) {
     a = imread(argv[1], 1); // fg
     b = imread(argv[2], 1); // bkg
 
+    // calibrate image a regarding to image b and store it to aCal
+    calibrateImage(a, b, aCal);
+
     if (argc == 4) {// if third argument is given, write silhouette to file.
-	extractSilhouetteRGB(a, b, bin, blurf1, blurf2, thresh);
+	extractSilhouetteRGB(aCal, b, bin, blurf1, blurf2, thresh);
 	imwrite(argv[3], bin);
     } else {// if third argument is not given, display GUI.
-	namedWindow("Slika", CV_WINDOW_AUTOSIZE);
-	imshow("Slika", a);  
-	createTrackbar( "blur1", "Slika", &blurf1, 10, thresh_callback);
-	createTrackbar( "blur2", "Slika", &blurf2, 10, thresh_callback);
-	createTrackbar( "thresh", "Slika", &thresh, 255, thresh_callback);
+	/* DIFF */
+	Mat differ;
+	absdiff(a, b, differ);
+	imshow("Prije kalibracije", differ);
+	absdiff(aCal, b, differ);
+	imshow("Poslije kalibracije", differ);
+	/* */
+
+	namedWindow("Slika (kalibrirana)", CV_WINDOW_AUTOSIZE);
+	imshow("Slika (kalibrirana)", aCal);  
+	createTrackbar( "blur1", "Slika (kalibrirana)", &blurf1, 10, thresh_callback);
+	createTrackbar( "blur2", "Slika (kalibrirana)", &blurf2, 10, thresh_callback);
+	createTrackbar( "thresh", "Slika (kalibrirana)", &thresh, 255, thresh_callback);
 	thresh_callback( 0, 0 );
 	waitKey(0);
     }
@@ -55,10 +69,14 @@ int main(int argc, char** argv) {
 }
 
 void thresh_callback(int, void* ) {
-    extractSilhouetteRGB(a, b, bin, blurf1, blurf2, thresh);
+    extractSilhouetteRGB(aCal, b, bin, blurf1, blurf2, thresh);
     namedWindow("Silueta", CV_WINDOW_AUTOSIZE);
     imshow("Silueta", bin);   
 }
+
+
+
+
 
 
 void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh) {
@@ -231,4 +249,62 @@ void extractLargestBlob(Mat& I) {
 	for (int c = 0; c < I.cols; c++)
 	    if (I.at<uchar>(r,c) != blobValue)
 		I.at<uchar>(r,c) = 0;
+}
+
+/* a and b must be grayscale */
+pair<int, int> findBestTranslation(Mat& a, Mat& b, int R=10, int step=2, int drStart = 0, int dcStart = 0) {
+    pair<int, int> bestTranslation = make_pair(0,0);
+    double smallestDiff = -1;
+
+    // try each translation
+    for (int dr = -R; dr < R; dr += step)
+	for (int dc = -R; dc < R; dc += step) {
+	    int numPixels = 0;
+	    long long diffSum = 0;
+	    // calculate difference for each pixel
+	    for (int r = 0; r < b.rows; r++)
+		for (int c = 0; c < b.cols; c++) {
+		    int rr = r-(dr+drStart);
+		    int cc = c-(dc+dcStart);
+		    // check if translated point is inside boundaries
+		    if (rr > 0 && rr <= a.rows && cc > 0 && cc <= a.cols) {
+			diffSum += abs(b.at<uchar>(r,c) - a.at<uchar>(rr,cc));
+			numPixels++;
+		    } else {		     
+			//diffSum += 100;
+			//numPixels++;
+		    }
+		}
+
+	    // if this is best translation, remember it.
+	    double normDiff = diffSum / (double)numPixels;
+	    if (smallestDiff == -1 || normDiff < smallestDiff) {
+		smallestDiff = normDiff;
+		bestTranslation = make_pair(dr+drStart, dc+dcStart);
+	    }
+	}
+
+    if (step > 1)
+	return findBestTranslation(a, b, step-1, 1, bestTranslation.first, bestTranslation.second);
+    else return bestTranslation;
+}
+
+/* takes image a, translates it so it matches image b as best as it can, and fills created empty space with pixels from b. Result is stored in res. */
+void calibrateImage(Mat& a, Mat& b, Mat& res) {
+    // find translation that matches a to b.
+    Mat aa, bb;
+    cvtColor(a, aa, CV_BGR2GRAY);
+    cvtColor(b, bb, CV_BGR2GRAY);
+    pair<int, int> tr = findBestTranslation(aa, bb);
+    cout << "calibration: " << tr.first << " " << tr.second << endl;
+
+    res.create(b.rows, b.cols, b.type());
+    for (int r = 0; r < res.rows; r++)
+	for (int c = 0; c < res.cols; c++) {
+	    int rr = r - tr.first;
+	    int cc = c - tr.second;
+	    if (rr > 0 && rr <= a.rows && cc > 0 && cc <= a.cols)
+		res.at<Vec3b>(r,c) = a.at<Vec3b>(rr,cc);
+	    else res.at<Vec3b>(r,c) = b.at<Vec3b>(r,c);
+	}
 }
