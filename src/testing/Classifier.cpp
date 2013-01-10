@@ -79,12 +79,11 @@ void Classifier::loadData(string testConf, string pathToSil)
     }
 }
 
-int Classifier::test(string testConf)
+int Classifier::countWrongs()
 {
-
+    // Count wrongs
     int wrong = 0;
     
-    // Izvrti preko testData i izbroji krive
     map< string, vector<Mat> >::iterator iter;
     for (iter = testData.begin(); iter != testData.end(); iter++)
     {
@@ -97,6 +96,16 @@ int Classifier::test(string testConf)
             if (realClassId != predClassId) wrong ++;
         }
     }
+
+    return wrong;
+}
+
+int Classifier::test(string testConf, string pathToSil)
+{
+    // Load data
+    loadData(testConf, pathToSil);
+
+    int wrong = countWrongs();
 
     return wrong;
 }

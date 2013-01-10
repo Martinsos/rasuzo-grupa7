@@ -26,17 +26,7 @@ class Classifier
          *  @param  pathToSil   Path to folder with silhouettes
          *  @returns            Number of correctly classified examples
          */
-        int test(string testConf);
-
-        void loadData(string testConf, string pathToSil);
-    
-    protected:
-
-
-    private:
-
-        map< string, vector<Mat> > testData;
-        map< string, vector<Mat> > learningData;
+        int test(string testConf, string pathToSil);
 
         /** Classifies given example
          *
@@ -50,7 +40,26 @@ class Classifier
          *  @param  learningData    
          */
         virtual void learn(map< string, vector<Mat> >& learningData) = 0;
+    
 
+    private:
+
+        map< string, vector<Mat> > testData;
+        map< string, vector<Mat> > learningData;
+
+        /** Loads testing configuration from file
+         *
+         *  @param  testConf    Path to file holding testing configuration 
+         *  @param  pathToSil   Path to folder with silhouettes
+         */
+        void loadData(string testConf, string pathToSil);
+
+
+        /** Counts wrong classified examples
+         *
+         *  @return 
+         */
+        int countWrongs();
 };
 
 #endif /* end of include guard: CLASSIFIER_HPP */
