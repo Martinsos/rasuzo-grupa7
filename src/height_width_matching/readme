@@ -1,0 +1,7 @@
+compile:
+./cvCompile.sh HWMatching.cpp 
+
+execute:
+./a.out <path_to_silhoutte_img>
+example:
+./a.out ../../siluete/sil3_igor/sil_PC200020.jpg
