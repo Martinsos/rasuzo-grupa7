@@ -3,7 +3,7 @@
 
 #include "SampleClassifier.hpp"
 
-string SampleClassifier::classify(Mat img)
+vector< pair<string, double> > SampleClassifier::classify(Mat img, int resNum)
 {
     /** Ovo je metoda koja za danu sliku vrati kojoj klasi pripada, tj klasificira je.
      *
@@ -12,6 +12,8 @@ string SampleClassifier::classify(Mat img)
      *  
      */
 
+
+    // ovo je krivo, treba vector vratiti
     return "classId";
 }
 

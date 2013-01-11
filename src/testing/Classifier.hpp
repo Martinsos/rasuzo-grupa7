@@ -8,6 +8,7 @@
 
 #include <string>
 #include <map>
+#include <utility>
 
 #include<opencv2/core/core.hpp>
 #include<opencv2/opencv.hpp>
@@ -23,17 +24,22 @@ class Classifier
          *  Loops through all examples and classifies them
          *
          *  @param  testConf    Path to file holding testing configuration 
+         *  @param  resNum      Number of best resulst to look at
          *  @param  pathToSil   Path to folder with silhouettes
          *  @returns            Number of correctly classified examples
          */
-        int test(string testConf, string pathToSil);
+        int test(string testConf, int resNum, string pathToSil);
 
         /** Classifies given example
          *
-         *  @param  imageName   name of image to be classified
-         *  @returns            Id of identified class        
+         *  @param  imageName   Name of image to classify
+         *  @param  resNum      Number of results to return
+         *
+         *  @returns            Ids of identified classses, sorted starting from the best.
+         *                      Elements of vector are: (classId, assocValue).
+         *                      E.g [("Viktor", 0.78), ("Tena", 0.22)]
          */
-        virtual string classify(Mat img) = 0;
+        virtual vector< pair<string, double> > classify(Mat img, int resNum) = 0;
 
         /** Learns classifier
          *
@@ -56,9 +62,10 @@ class Classifier
 
         /** Counts wrong classified examples
          *
+         *  @param resNum   Number of results to look at
          *  @return 
          */
-        int countWrongs();
+        int countWrongs(int resNum);
 };
 
 #endif /* end of include guard: CLASSIFIER_HPP */

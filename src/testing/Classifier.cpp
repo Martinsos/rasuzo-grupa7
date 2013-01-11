@@ -35,6 +35,14 @@ bool inSet(string s, set<string> words)
     return !(words.find(s) == words.end());
 }
 
+bool inPredClasses(string real, vector< pair<string, double> > pred)
+{
+    for (int i = 0; i < pred.size(); i++)
+        if (real == pred[i].first) return true;
+
+    return false;
+}
+
 int Classifier::loadData(string testConf, string pathToSil)
 {
     // Open file with testing configuration
@@ -116,7 +124,7 @@ int Classifier::loadData(string testConf, string pathToSil)
     return 0;
 }
 
-int Classifier::countWrongs()
+int Classifier::countWrongs(int resNum) 
 {
     // Count wrongs
     int wrong = 0;
@@ -129,15 +137,16 @@ int Classifier::countWrongs()
 
         for (int i = 0; i < imgs.size(); i++)
         {
-            string predClassId = classify(imgs[i]);
-            if (realClassId != predClassId) wrong ++;
+            vector< pair<string, double> > predClasses = classify(imgs[i], resNum);
+
+            if (inPredClasses(realClassId, predClasses)) wrong ++;
         }
     }
 
     return wrong;
 }
 
-int Classifier::test(string testConf, string pathToSil)
+int Classifier::test(string testConf, int resNum, string pathToSil)
 {
     // Load data
     int status = loadData(testConf, pathToSil);
@@ -151,6 +160,6 @@ int Classifier::test(string testConf, string pathToSil)
     learn(learningData);
 
     // Evaluate
-    int wrong = countWrongs();
+    int wrong = countWrongs(resNum);
     return wrong;
 }

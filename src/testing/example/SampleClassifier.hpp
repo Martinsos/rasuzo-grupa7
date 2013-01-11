@@ -11,7 +11,7 @@ class SampleClassifier : public Classifier
     public: 
 
         // Virtualna metoda - obavezno implementirati
-        virtual string classify(Mat img);
+        virtual vector< pair<string, double> > classify(Mat img, int resNum);
 
         // Virtualna metoda - obavezno implementirati
         virtual void learn(map< string, vector<Mat> >& learningData);
