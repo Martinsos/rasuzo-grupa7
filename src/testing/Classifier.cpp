@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <set>
 
 #include <cstdlib>
 #include <dirent.h>
@@ -29,15 +30,25 @@ bool isFile(string name)
     return (name != ".." && name != ".");
 }
 
-void Classifier::loadData(string testConf, string pathToSil)
+bool inSet(string s, set<string> words)
 {
+    return !(words.find(s) == words.end());
+}
 
+int Classifier::loadData(string testConf, string pathToSil)
+{
     // Open file with testing configuration
     ifstream tcStream(testConf.c_str());
+    if (!tcStream.is_open())
+    {
+        printf ("Could not open %s\n", testConf.c_str());
+        return 1;
+    }
 
     string classId;
     string folderName;
-    string testImgName;
+    set<string> testImgsNames;
+
     while (tcStream.good())
     {
         // Skip comments and empty lines
@@ -47,11 +58,24 @@ void Classifier::loadData(string testConf, string pathToSil)
             continue;
         else
         {
+            // Get folder name
             folderName = line;
             classId = getClassId(folderName);
 
-            getline(tcStream, testImgName); // unaprijediti da moze vise
+            // Get testing images names
+            while(tcStream.good())
+            {
+                getline(tcStream, line);
+                if (!hasData(line))
+                    break;
+
+                testImgsNames.insert(line);
+            }
         }
+
+        cout << "Folder name: " << folderName << endl;
+        cout << "classID: " << classId << endl;
+        cout << "----" << endl;
 
         // Get pictures from folder
         DIR *Dir;
@@ -59,6 +83,12 @@ void Classifier::loadData(string testConf, string pathToSil)
         string dirPath = pathToSil + folderName;
 
         Dir = opendir(dirPath.c_str());
+        if (Dir == NULL)
+        {
+            printf ("Directory %s cannot be opened\n", dirPath.c_str());
+            return 2;
+        }
+
         while(DirEntry = readdir(Dir))
         {
             if (!isFile(DirEntry->d_name))
@@ -66,17 +96,24 @@ void Classifier::loadData(string testConf, string pathToSil)
 
             // Store image to corresponding set (test or learning)
             string imgName(DirEntry->d_name);
-            if (imgName == testImgName)
+            if (inSet(imgName, testImgsNames))
             {
                 testData[classId].push_back( imread(imgName, 1) );
+                cout << "test: " << imgName << endl;
             }
             else
             {
                 learningData[classId].push_back( imread(imgName, 1) );
+                cout << "learn: " << imgName << endl;
             }
         }
+        cout << "-------------------------------" << endl;
         cout << endl;
+
     }
+    
+    // Everything went ok
+    return 0;
 }
 
 int Classifier::countWrongs()
@@ -103,9 +140,17 @@ int Classifier::countWrongs()
 int Classifier::test(string testConf, string pathToSil)
 {
     // Load data
-    loadData(testConf, pathToSil);
+    int status = loadData(testConf, pathToSil);
+    if (status != 0)
+    {
+        printf ("Error occured!\n");
+        return -1;
+    }
 
+    // Learn classifier
+    learn(learningData);
+
+    // Evaluate
     int wrong = countWrongs();
-
     return wrong;
 }

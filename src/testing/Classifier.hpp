@@ -41,7 +41,6 @@ class Classifier
          */
         virtual void learn(map< string, vector<Mat> >& learningData) = 0;
     
-
     private:
 
         map< string, vector<Mat> > testData;
@@ -51,9 +50,9 @@ class Classifier
          *
          *  @param  testConf    Path to file holding testing configuration 
          *  @param  pathToSil   Path to folder with silhouettes
+         *  @returns            Status - 0 if everything ok
          */
-        void loadData(string testConf, string pathToSil);
-
+        int loadData(string testConf, string pathToSil);
 
         /** Counts wrong classified examples
          *
