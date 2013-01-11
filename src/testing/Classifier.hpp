@@ -20,7 +20,7 @@ class Classifier
 {
     public:
 
-        /** Main testing function
+       /** Main testing function
          *  Loops through all examples and classifies them
          *
          *  @param  testConf    Path to file holding testing configuration 
@@ -47,6 +47,7 @@ class Classifier
          */
         virtual void learn(map< string, vector<Mat> >& learningData) = 0;
     
+
     private:
 
         map< string, vector<Mat> > testData;
@@ -56,9 +57,9 @@ class Classifier
          *
          *  @param  testConf    Path to file holding testing configuration 
          *  @param  pathToSil   Path to folder with silhouettes
-         *  @returns            Status - 0 if everything ok
          */
         int loadData(string testConf, string pathToSil);
+
 
         /** Counts wrong classified examples
          *
@@ -66,6 +67,15 @@ class Classifier
          *  @return 
          */
         int countWrongs(int resNum);
+
+		/**
+		 * Returns the files from given folder.
+		 * Implementation is OS independant
+		 *
+		 * @param name of the folder
+		 * @return vector with filenames
+		 */
+		static vector<string> getFilesFromFolder(string folderName);
 };
 
 #endif /* end of include guard: CLASSIFIER_HPP */
