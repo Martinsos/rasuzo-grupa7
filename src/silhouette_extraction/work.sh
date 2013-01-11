@@ -1,11 +1,9 @@
 #!/bin/bash
 
-BACKGROUND="../../RASUZOslikeSmanjene/PC200038.jpg"
+BACKGROUND=$1 # path to background picture
 
-first=31
-last=37
-
-# ./a.out ../../RASUZOslikeSmanjene/PC200021.jpg $BACKGROUND ../../siluete/sil_PC200021.jpg
+first=$2 # number of first picture (for example: 25)
+last=$3 # number of alst picture (for example: 45)
 
 for (( i = $first; i <= $last; i++ ))
 do
@@ -18,7 +16,7 @@ do
     PIC="PC2$suf.jpg"
     SIL="sil_${PIC}"
 
-    ./a.out ../../RASUZOslikeSmanjene/$PIC $BACKGROUND ../../siluete/$SIL
+    ./silhouetteExtraction ../../slike/$PIC $BACKGROUND ../../siluete/$SIL
 
     echo $PIC
 done
