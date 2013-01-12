@@ -12,9 +12,14 @@ vector< pair<string, double> > SampleClassifier::classify(Mat img, int resNum)
      *  
      */
 
+    // Vratim vector parova, gdje je broj u svakom paru neka vrijednost po kojoj odredim koliko
+    // je izgledna koja klasa (vjerojatnost, poklapanje ili nesto trece).
+    // Ako je klasifikator takav da ne vraca nikakvu vrijednost, stavite -1 ili nesto bzvz po zelji.
 
-    // ovo je krivo, treba vector vratiti
-    return "classId";
+    vector< pair<string, double> > ret;
+    ret.push_back(make_pair("Ivan", 0.93));
+
+    return ret;
 }
 
 void SampleClassifier::learn(map< string, vector<Mat> >& learningData)
