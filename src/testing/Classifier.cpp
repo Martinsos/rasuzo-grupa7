@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <set>
 
 #include <cstdlib>
@@ -113,7 +114,7 @@ int Classifier::loadData(string testConf, string pathToSil)
     ifstream tcStream(testConf.c_str());
     if (!tcStream.is_open())
     {
-        printf ("Could not open %s\n", testConf.c_str());
+        fprintf (stderr, "Could not open %s\n", testConf.c_str());
         return 1;
     }
 
@@ -197,28 +198,22 @@ int Classifier::countWrongs(int resNum)
     return wrong;
 }
 
-int Classifier::test(string testConf, int resNum, string pathToSil)
+int Classifier::test(string testConf, int resNum, string pathToSil, string reportPath)
 {
     // Load data
     int status = loadData(testConf, pathToSil);
     if (status != 0)
     {
-        printf ("Error occured!\n");
+        printf ("Error occured while loading data!\n");
         return -1;
     }
 
     // Learn classifier
     learn(learningData);
 
-    // Evaluate
-    int wrong = countWrongs(resNum);
-    return wrong;
-}
-
-// typedef map < string, map<string, int> > ConfusionMatrix;
-Classifier::ConfusionMatrix Classifier::getConfusionMatrix()
-{
-    ConfusionMatrix ret;
+    // Acquire statistics
+    int wrong = 0;
+    ConfusionMatrix confusionMat;
 
     map< string, vector<Mat> >::iterator iter;
     for (iter = testData.begin(); iter != testData.end(); iter++)
@@ -228,10 +223,109 @@ Classifier::ConfusionMatrix Classifier::getConfusionMatrix()
 
         for (int i = 0; i < imgs.size(); i++)
         {
-            string predClassId = classify(imgs[i], 1)[0].first;
-            ret[realClassId][predClassId] += 1;
+            // Get classifier output for single test img
+            vector< pair<string, double> > predClasses = classify(imgs[i], resNum);
+
+            // Wrong if not equal to any of predicted classes
+            if (!inPredClasses(realClassId, predClasses)) wrong++;
+
+            // Update confusion matrix - take only best match
+            string predClassId = predClasses[0].first;
+            confusionMat[predClassId][realClassId] += 1;
         }
     }
 
-    return ret; 
+    // Generate report
+    status = generateReport(confusionMat, reportPath);
+    if (status != 0)
+    {
+        printf ("Error occured while generating report!\n");
+        return -1;
+    }
+
+    return wrong;
+}
+
+vector<string> Classifier::getClassIDs()
+{
+    vector<string> keys;
+
+    map< string, vector<Mat> >::iterator iter;
+    for (iter = learningData.begin(); iter != learningData.end(); iter++)
+    {
+        keys.push_back(iter->first);
+    }
+
+    return keys;
+}
+
+
+int Classifier::generateReport(ConfusionMatrix& confusionMat, string repPath)
+{
+    // Open file to store report
+    ofstream reportFile(repPath.c_str());
+    if (!reportFile.is_open())
+    {
+       fprintf(stderr, "Cannot open file %s to store report", repPath.c_str());
+       return 1;
+    }
+
+    // Store confusion matrix as HTML table
+    reportFile << confusionMatrixToHTML(confusionMat);
+    reportFile.close();
+
+    // Everything went ok
+    return 0;
+}
+
+string Classifier::confusionMatrixToHTML(ConfusionMatrix& confusionMat)
+{
+    string HTMLrep = "";
+
+    // Get keys (classIDs)
+    vector<string> classIDs = getClassIDs();
+
+    // ---------------------------------- Generate HTML ------------------------------- //
+
+    // Print header
+    HTMLrep += "<table border=\"1\" style=\"border-collapse:collapse\">\n";
+
+    HTMLrep += "<tr>\n";
+
+        HTMLrep += "\t<th/>\n";    
+        for (int i = 0; i < classIDs.size(); i++)
+            HTMLrep += "\t<th>" + classIDs[i] + "</th>\n";
+
+    HTMLrep += "</tr>\n";
+
+
+    // Print table content
+    for (int predIdx = 0; predIdx < classIDs.size(); predIdx++)
+    {
+        HTMLrep += "<tr>\n";
+            HTMLrep += "\t<th>" + classIDs[predIdx] + "</th>\n";
+        
+            // Write each value of row
+            for (int realIdx = 0; realIdx < classIDs.size(); realIdx++)
+            {
+                // Get keys for confusion matrix
+                string predName = classIDs[predIdx];
+                string realName = classIDs[realIdx];
+                
+                // Convert int to string
+                stringstream ss;
+                ss << confusionMat[predName][realName];
+                string val = ss.str();
+
+                // Print value
+                HTMLrep += "\t<td align=\"center\">" + val + "</td>\n";
+            }
+        HTMLrep += "</tr>\n";
+    }
+
+    // Print closing stuff
+    HTMLrep += "</table>";
+
+    // Everything went ok
+    return HTMLrep;
 }

@@ -20,15 +20,17 @@ class Classifier
 {
     public:
 
-       /** Main testing function
+       /**  Main testing function
          *  Loops through all examples and classifies them
          *
          *  @param  testConf    Path to file holding testing configuration 
          *  @param  resNum      Number of best resulst to look at
          *  @param  pathToSil   Path to folder with silhouettes
+         *  @param  reportPath  Path where is HTML report stored
+         *
          *  @returns            Number of correctly classified examples
          */
-        int test(string testConf, int resNum, string pathToSil);
+        int test(string testConf, int resNum, string pathToSil, string reportPath);
 
         /** Classifies given example
          *
@@ -61,7 +63,6 @@ class Classifier
          */
         int loadData(string testConf, string pathToSil);
 
-
         /** Counts wrong classified examples
          *
          *  @param resNum   Number of results to look at
@@ -69,11 +70,13 @@ class Classifier
          */
         int countWrongs(int resNum);
 
-        /** Constructs confusion matrix
+        /** Generates HTML table for given confusion matrix
          *
+         *  @param  confusionMat    Confusion matrix
+         *  @returns                String with HTML record
          */
         typedef map < string, map<string, int> > ConfusionMatrix;
-        ConfusionMatrix getConfusionMatrix();
+        string confusionMatrixToHTML(ConfusionMatrix& confusionMat);
 
         /**
          * Returns the files from given folder.
@@ -83,6 +86,21 @@ class Classifier
          * @return vector with filenames
          */
         static vector<string> getFilesFromFolder(string folderName);
+
+        /** Gets all class IDs.
+         *  Actually reads keys from learningSet
+         */
+        vector<string> getClassIDs();
+
+        /** Generates report to given path.
+         *  So far, report consists of confusion matrix.
+         *
+         *  @param  confusionMatrix Confusion matrix 
+         *  @param  repPath         Path of report file 
+         *  @returns                status - 0 if everyhting ok
+         */
+        int generateReport(ConfusionMatrix& confusionMat, string repPath);
+
 };
 
 #endif /* end of include guard: CLASSIFIER_HPP */

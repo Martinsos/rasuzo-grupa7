@@ -7,7 +7,7 @@ int main(int argc, char const *argv[])
     Classifier* sampleCl = new SampleClassifier();
     
     // Count wrong classifications
-    int wrongs = sampleCl->test("testConfSample.txt", 3, "../../../siluete/");
+    int wrongs = sampleCl->test("testConfSample.txt", 3, "../../../siluete/", "sampleReport.html");
 
     cout << "Number of wrong classifications: " << wrongs << endl;
     return 0;
