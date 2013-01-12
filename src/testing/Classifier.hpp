@@ -37,7 +37,7 @@ class Classifier
          *
          *  @returns            Ids of identified classses, sorted starting from the best.
          *                      Elements of vector are: (classId, assocValue).
-         *                      E.g [("Viktor", 0.78), ("Tena", 0.22)]
+         *                      E.g. [("Viktor", 0.78), ("Tena", 0.22)]
          */
         virtual vector< pair<string, double> > classify(Mat img, int resNum) = 0;
 
@@ -68,14 +68,14 @@ class Classifier
          */
         int countWrongs(int resNum);
 
-		/**
-		 * Returns the files from given folder.
-		 * Implementation is OS independant
-		 *
-		 * @param name of the folder
-		 * @return vector with filenames
-		 */
-		static vector<string> getFilesFromFolder(string folderName);
+        /**
+         * Returns the files from given folder.
+         * Implementation is OS independant
+         *
+         * @param name of the folder
+         * @return vector with filenames
+         */
+        static vector<string> getFilesFromFolder(string folderName);
 };
 
 #endif /* end of include guard: CLASSIFIER_HPP */

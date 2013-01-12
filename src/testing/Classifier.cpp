@@ -1,6 +1,5 @@
 /** Implementation of Classifier
  */
-#include "stdafx.h"
 
 #include "Classifier.hpp"
 
@@ -92,11 +91,10 @@ vector<string> Classifier::getFilesFromFolder(string folderName)
 	} else {
 		while ((dirent = readdir(d)) != NULL) {
 			if (isFile(dirent->d_name)) {
-				std::string filename(dirent->d_name);
-				filenames.push_back(filename);
+			        string filename(dirent->d_name);
+			        filenames.push_back(filename);
 			}
 		}
-
 		closedir(d);
 	}
 #endif
@@ -116,46 +114,59 @@ int Classifier::loadData(string testConf, string pathToSil)
 
     string classId;
     string folderName;
-    string testImgName;
+    set<string> testImgsNames;
     while (tcStream.good())
     {
         // Skip comments and empty lines
         string line;
         getline(tcStream, line);
-        if (!hasData(line)) {
+        if (!hasData(line)) 
             continue;
-		} else {
-            folderName = line;
-            classId = getClassId(folderName);
+        else 
+        {
+            folderName = line;                  // Get folder name
+            classId = getClassId(folderName);   // Get classId
 
-            getline(tcStream, testImgName); // unaprijediti da moze vise
+            testImgsNames.clear();
+            while (tcStream.good())             // Get names of test images
+            {
+                getline(tcStream, line);
+                if(!hasData(line)) break;
+                
+                testImgsNames.insert(line);
+            }
         }
 
         // Get pictures from folder
-		string dirPath = pathToSil + folderName;
-
-		const vector<string>& filenames = Classifier::getFilesFromFolder(pathToSil);
+	string dirPath = pathToSil + folderName;
+	const vector<string>& filenames = getFilesFromFolder(dirPath);
        
-        for (int i = 0; i < (int) filenames.size(); i++) {
+#ifdef WIN32
 
+        dirPath += "\\";
+#else
+        dirPath += "/";
+
+#endif
+
+        for (int i = 0; i < (int) filenames.size(); i++) 
+        {
             // Store image to corresponding set (test or learning)
             string imgName = filenames[i];
+            string imgPath = dirPath + imgName;
 
-			printf("Image %d name: %s\n", i, imgName.c_str());
-
-            if (imgName == testImgName)
+            if (inSet(imgName, testImgsNames))
             {
-                testData[classId].push_back( imread(imgName, 1) );
+                testData[classId].push_back( imread(imgPath, 1) );
             }
             else
             {
-                learningData[classId].push_back( imread(imgName, 1) );
+                learningData[classId].push_back( imread(imgPath, 1) );
             }
         }
-        cout << endl;
     }
 
-	// Everything went ok
+    // Everything went ok
     return 0;
 }
 
@@ -174,7 +185,8 @@ int Classifier::countWrongs(int resNum)
         {
             vector< pair<string, double> > predClasses = classify(imgs[i], resNum);
 
-            if (inPredClasses(realClassId, predClasses)) wrong ++;
+            // Wrong if not equal to any predicted class
+            if (!inPredClasses(realClassId, predClasses)) wrong++;
         }
     }
 
