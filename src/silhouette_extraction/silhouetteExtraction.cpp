@@ -1,85 +1,20 @@
 #include<iostream>
-#include<opencv2/core/core.hpp>
-#include<opencv2/opencv.hpp>
-#include<opencv2/highgui/highgui.hpp>
-#include<queue>
-#include<vector>
 #include<algorithm>
 #include<queue>
-#include<utility>
+
+#include "silhouetteExtraction.hpp"
 
 using namespace std;
 using namespace cv;
 
-void extractSilhouette(Mat&, Mat&, Mat&, int, int, int);
-void extractSilhouetteRGB(Mat&, Mat&, Mat&, int, int, int);
-unsigned char medianBW(Mat&);
-void fillHoles(Mat&, Mat&);
-int floodFill(Mat&, Point2i, unsigned char);
-void extractLargestBlob(Mat&);
-pair<int, int> findBestTranslation(Mat&, Mat&, int, int, int, int);
-void calibrateImage(Mat&, Mat&, Mat&);
-
-int blurf1 = 5;
-int blurf2 = 5;
-int thresh = 10;
-void thresh_callback(int, void*);
-
-Mat a, aCal, b, bin;
-
-
-void printUsage() {
-    cout << "Usage: ./progName <path_to_image> <path_to_background_image> [<path_to_save_silhouette>]" << endl;
-}
-
-int main(int argc, char** argv) {
-    if (argc < 3) {
-	printUsage();
-	return 1;
+void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh, bool calibrate = true) {
+    if (calibrate) {
+	 // calibrate image img regarding to image bkg
+	Mat imgCal;
+	calibrateImage(img, bkg, imgCal);
+	img = imgCal;
     }
 
-    a = imread(argv[1], 1); // fg
-    b = imread(argv[2], 1); // bkg
-
-    // calibrate image a regarding to image b and store it to aCal
-    calibrateImage(a, b, aCal);
-
-    if (argc == 4) {// if third argument is given, write silhouette to file.
-	extractSilhouetteRGB(aCal, b, bin, blurf1, blurf2, thresh);
-	imwrite(argv[3], bin);
-    } else {// if third argument is not given, display GUI.
-	/* DIFF */
-	Mat differ;
-	absdiff(a, b, differ);
-	imshow("Prije kalibracije", differ);
-	absdiff(aCal, b, differ);
-	imshow("Poslije kalibracije", differ);
-	/* */
-
-	namedWindow("Slika (kalibrirana)", CV_WINDOW_AUTOSIZE);
-	imshow("Slika (kalibrirana)", aCal);  
-	createTrackbar( "blur1", "Slika (kalibrirana)", &blurf1, 10, thresh_callback);
-	createTrackbar( "blur2", "Slika (kalibrirana)", &blurf2, 10, thresh_callback);
-	createTrackbar( "thresh", "Slika (kalibrirana)", &thresh, 255, thresh_callback);
-	thresh_callback( 0, 0 );
-	waitKey(0);
-    }
-
-    return 0;
-}
-
-void thresh_callback(int, void* ) {
-    extractSilhouetteRGB(aCal, b, bin, blurf1, blurf2, thresh);
-    namedWindow("Silueta", CV_WINDOW_AUTOSIZE);
-    imshow("Silueta", bin);   
-}
-
-
-
-
-
-
-void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh) {
     // convert image and background to BW and blur them(to reduce noise)
     Mat imgBW, bkgBW;
     Mat imgBL, bkgBL;
@@ -94,12 +29,7 @@ void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, 
     blur(diff, diffBL, Size(blurf2, blurf2));
     
     // find median of diffBL
-    vector<unsigned short> vals;
-    for (int i = 0; i < diffBL.rows; i++)
-	for (int j = 0; j < diffBL.cols; j++)
-	    vals.push_back(diffBL.at<uchar>(i, j));
-    sort(vals.begin(), vals.end());
-    unsigned char median = vals[vals.size()/2];
+    unsigned char median = medianBW(diffBL);
 
     // binarize image -> 255 is silhouette, 0 is background. Use median as threshold.
     Mat bin;
@@ -115,7 +45,14 @@ void extractSilhouette(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, 
     binary = binFull;
 }
 
-void extractSilhouetteRGB(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh) {
+void extractSilhouetteRGBMax(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh, bool calibrate = true) {
+    if (calibrate) {
+	 // calibrate image img regarding to image bkg
+	Mat imgCal;
+	calibrateImage(img, bkg, imgCal);
+	img = imgCal;
+    }
+
     // blur input images
     Mat img_, bkg_;
     blur(img, img_, Size(blurf1, blurf1));
@@ -136,13 +73,12 @@ void extractSilhouetteRGB(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf
     vector<Mat> diffsBl(3);
     for (int i = 0; i < 3; i++)
 	blur(diffs[i], diffsBl[i], Size(blurf2, blurf2));
-    
-    // take maximum difference for each pixel.
+       
+    // take maximum RGB difference for each pixel.
     Mat diff_, diff;
     max(diffsBl[0], diffsBl[1], diff_);
     max(diffsBl[2], diff_, diff);
-    //diff = (diffsBl[0]/3+diffsBl[1]/3+diffsBl[2]/3);
-
+    imshow("diffMax", diff);
     // find median
     unsigned char median = medianBW(diff);
 
@@ -160,6 +96,65 @@ void extractSilhouetteRGB(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf
     binary = binFull;
 }
 
+void extractSilhouetteRGBSum(Mat& img, Mat& bkg, Mat& binary, int blurf1, int blurf2, int thresh, bool calibrate = true) {
+    if (calibrate) {
+	 // calibrate image img regarding to image bkg
+	Mat imgCal;
+	calibrateImage(img, bkg, imgCal);
+	img = imgCal;
+    }
+
+    // blur input images
+    Mat img_, bkg_;
+    blur(img, img_, Size(blurf1, blurf1));
+    blur(bkg, bkg_, Size(blurf1, blurf1));
+    
+    // separate input images into channels (rgb)
+    vector<Mat> chsImg;
+    split(img_, chsImg);
+    vector<Mat> chsBkg;
+    split(bkg_, chsBkg);
+    
+    // find difference for each channel
+    vector<Mat> diffs(3);
+    for (int i = 0; i < 3; i++)
+	absdiff(chsBkg[i], chsImg[i], diffs[i]);
+
+    // blur differences
+    vector<Mat> diffsBl(3);
+    for (int i = 0; i < 3; i++)
+	blur(diffs[i], diffsBl[i], Size(blurf2, blurf2));
+       
+    // alternative: take sum of RGB differences for each pixel
+    Mat diff = (diffsBl[0]) + (diffsBl[1]) + (diffsBl[2]);
+    imshow("diffSum", diff);
+    // find median
+    double median = medianBW(diff);
+
+    // binarize image -> 255 is silhouette, 0 is background. Use median as threshold.
+    Mat bin;
+    threshold(diff, bin, median+thresh, 255, CV_THRESH_BINARY);
+
+    // fill holes
+    Mat binFull;
+    fillHoles(bin, binFull);
+
+    // extract largest blob
+    extractLargestBlob(binFull);
+    
+    binary = binFull;
+}
+
+
+
+
+
+
+
+
+/*
+ * Finds median of Grayscale image.
+ */
 unsigned char medianBW(Mat& img) {
     vector<unsigned char> vals;
     for (int i = 0; i < img.rows; i++)
@@ -296,7 +291,6 @@ void calibrateImage(Mat& a, Mat& b, Mat& res) {
     cvtColor(a, aa, CV_BGR2GRAY);
     cvtColor(b, bb, CV_BGR2GRAY);
     pair<int, int> tr = findBestTranslation(aa, bb);
-    cout << "calibration: " << tr.first << " " << tr.second << endl;
 
     res.create(b.rows, b.cols, b.type());
     for (int r = 0; r < res.rows; r++)
