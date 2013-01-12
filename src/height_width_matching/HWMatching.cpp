@@ -15,6 +15,7 @@ void getFeatures(Mat&);
 void printUsage();
 void printFeatureValues();
 int getHeadWidth();
+int getHeadHeight();
 int getMaxHeight();
 int getMaxWidth();
 
@@ -22,6 +23,7 @@ Mat a;
 vector <int> heights;
 vector <int> widths;
 int maxWidth, maxHeight; //though it can be extracted from heights&widths
+int headHeight;
 
 int main(int argc, char **argv) {
 
@@ -38,6 +40,7 @@ int main(int argc, char **argv) {
   printFeatureValues();
 
   cout << "Head width: " << getHeadWidth() << endl;
+  cout << "Head height: " << getHeadHeight() << endl;
   cout << getMaxWidth() << endl;
   cout << getMaxHeight() << endl;
 
@@ -126,6 +129,8 @@ void printFeatureValues() {
 
 int getHeadWidth() {
 
+  headHeight = -1;
+
   if( widths.size() == 0 ) {
     cout << "getFeatures wasn't called first or no\
              widths extracted from silhouette" << endl;
@@ -157,9 +162,14 @@ int getHeadWidth() {
     i++;
   }  
 
+  headHeight = i;
+
   return maxHeadWidth;
 }
 
+int getHeadHeight() {
+  return headHeight;
+}
 
 int getMaxHeight() {
    
