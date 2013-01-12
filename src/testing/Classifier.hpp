@@ -47,11 +47,12 @@ class Classifier
          */
         virtual void learn(map< string, vector<Mat> >& learningData) = 0;
     
+    protected:
+        map< string, vector<Mat> > learningData;
 
     private:
 
         map< string, vector<Mat> > testData;
-        map< string, vector<Mat> > learningData;
 
         /** Loads testing configuration from file
          *
