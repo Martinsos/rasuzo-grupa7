@@ -12,4 +12,3 @@ int main(int argc, char const *argv[])
     cout << "Number of wrong classifications: " << wrongs << endl;
     return 0;
 }
-

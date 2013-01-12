@@ -17,6 +17,8 @@
 #include <dirent.h>
 #endif
 
+// ------------------------------- Utility methods ---------------------------------- //
+
 bool hasData(string line)
 {
     return (line.size() > 0 && line[0] != '#' && line[0] != ' ');
@@ -49,6 +51,8 @@ bool inPredClasses(string real, vector< pair<string, double> > pred)
 
     return false;
 }
+
+// ------------------------------- Class methods ---------------------------------- //
 
 vector<string> Classifier::getFilesFromFolder(string folderName)
 {
@@ -189,7 +193,6 @@ int Classifier::countWrongs(int resNum)
             if (!inPredClasses(realClassId, predClasses)) wrong++;
         }
     }
-
     return wrong;
 }
 
@@ -209,4 +212,25 @@ int Classifier::test(string testConf, int resNum, string pathToSil)
     // Evaluate
     int wrong = countWrongs(resNum);
     return wrong;
+}
+
+// typedef map < string, map<string, int> > ConfusionMatrix;
+Classifier::ConfusionMatrix Classifier::getConfusionMatrix()
+{
+    ConfusionMatrix ret;
+
+    map< string, vector<Mat> >::iterator iter;
+    for (iter = testData.begin(); iter != testData.end(); iter++)
+    {
+        string realClassId = iter->first;
+        vector<Mat>& imgs = iter->second;
+
+        for (int i = 0; i < imgs.size(); i++)
+        {
+            string predClassId = classify(imgs[i], 1)[0].first;
+            ret[realClassId][predClassId] += 1;
+        }
+    }
+
+    return ret; 
 }

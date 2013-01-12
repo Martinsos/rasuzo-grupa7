@@ -68,6 +68,12 @@ class Classifier
          */
         int countWrongs(int resNum);
 
+        /** Constructs confusion matrix
+         *
+         */
+        typedef map < string, map<string, int> > ConfusionMatrix;
+        ConfusionMatrix getConfusionMatrix();
+
         /**
          * Returns the files from given folder.
          * Implementation is OS independant
