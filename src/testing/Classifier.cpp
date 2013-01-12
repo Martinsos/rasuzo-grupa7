@@ -10,6 +10,7 @@
 #include <cstdlib>
 
 #ifdef WIN32
+#include "StdAfx.h"
 #include <Windows.h>
 #include <tchar.h> 
 #include <strsafe.h>
