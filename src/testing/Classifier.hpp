@@ -63,12 +63,7 @@ class Classifier
          */
         int loadData(string testConf, string pathToSil);
 
-        /** Counts wrong classified examples
-         *
-         *  @param resNum   Number of results to look at
-         *  @return 
-         */
-        int countWrongs(int resNum);
+        // -------------------------- Report generation -------------------------- //
 
         /** Generates HTML table for given confusion matrix
          *
@@ -99,7 +94,7 @@ class Classifier
          *  @param  repPath         Path of report file 
          *  @returns                status - 0 if everyhting ok
          */
-        int generateReport(ConfusionMatrix& confusionMat, string repPath);
+        int generateReport(ConfusionMatrix& confusionMat, int wrong, int total, string repPath);
 
 };
 

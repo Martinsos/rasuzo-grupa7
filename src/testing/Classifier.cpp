@@ -21,6 +21,14 @@
 
 // ------------------------------- Utility methods ---------------------------------- //
 
+string intToStr(int a)
+{
+    stringstream ss;
+    ss << a;
+
+    return ss.str();
+}
+
 bool hasData(string line)
 {
     return (line.size() > 0 && line[0] != '#' && line[0] != ' ');
@@ -176,28 +184,6 @@ int Classifier::loadData(string testConf, string pathToSil)
     return 0;
 }
 
-int Classifier::countWrongs(int resNum) 
-{
-    // Count wrongs
-    int wrong = 0;
-    
-    map< string, vector<Mat> >::iterator iter;
-    for (iter = testData.begin(); iter != testData.end(); iter++)
-    {
-        string realClassId = iter->first;
-        vector<Mat>& imgs = iter->second;
-
-        for (int i = 0; i < imgs.size(); i++)
-        {
-            vector< pair<string, double> > predClasses = classify(imgs[i], resNum);
-
-            // Wrong if not equal to any predicted class
-            if (!inPredClasses(realClassId, predClasses)) wrong++;
-        }
-    }
-    return wrong;
-}
-
 int Classifier::test(string testConf, int resNum, string pathToSil, string reportPath)
 {
     // Load data
@@ -212,7 +198,8 @@ int Classifier::test(string testConf, int resNum, string pathToSil, string repor
     learn(learningData);
 
     // Acquire statistics
-    int wrong = 0;
+    int wrong = 0;                      // Number of wrong classifications
+    int total = 0;                      // Total number of test cases
     ConfusionMatrix confusionMat;
 
     map< string, vector<Mat> >::iterator iter;
@@ -221,7 +208,7 @@ int Classifier::test(string testConf, int resNum, string pathToSil, string repor
         string realClassId = iter->first;
         vector<Mat>& imgs = iter->second;
 
-        for (int i = 0; i < imgs.size(); i++)
+        for (int i = 0; i < imgs.size(); i++, total++)
         {
             // Get classifier output for single test img
             vector< pair<string, double> > predClasses = classify(imgs[i], resNum);
@@ -236,7 +223,7 @@ int Classifier::test(string testConf, int resNum, string pathToSil, string repor
     }
 
     // Generate report
-    status = generateReport(confusionMat, reportPath);
+    status = generateReport(confusionMat, wrong, total, reportPath);
     if (status != 0)
     {
         printf ("Error occured while generating report!\n");
@@ -260,7 +247,7 @@ vector<string> Classifier::getClassIDs()
 }
 
 
-int Classifier::generateReport(ConfusionMatrix& confusionMat, string repPath)
+int Classifier::generateReport(ConfusionMatrix& confusionMat, int wrong, int total, string repPath)
 {
     // Open file to store report
     ofstream reportFile(repPath.c_str());
@@ -272,6 +259,13 @@ int Classifier::generateReport(ConfusionMatrix& confusionMat, string repPath)
 
     // Store confusion matrix as HTML table
     reportFile << confusionMatrixToHTML(confusionMat);
+    reportFile << "\n\n";
+    
+    // Store correctness
+    int correct = total - wrong;
+    reportFile << "Correctness: " << correct << "/" << total << " -> ";
+    reportFile << correct / (double) total << endl;
+
     reportFile.close();
 
     // Everything went ok
@@ -313,9 +307,7 @@ string Classifier::confusionMatrixToHTML(ConfusionMatrix& confusionMat)
                 string realName = classIDs[realIdx];
                 
                 // Convert int to string
-                stringstream ss;
-                ss << confusionMat[predName][realName];
-                string val = ss.str();
+                string val = intToStr(confusionMat[predName][realName]);
 
                 // Print value
                 HTMLrep += "\t<td align=\"center\">" + val + "</td>\n";
