@@ -5,14 +5,33 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <set>
 
 #include <cstdlib>
+
+#ifdef WIN32
+#include "StdAfx.h"
+#include <Windows.h>
+#include <tchar.h> 
+#include <strsafe.h>
+#else
 #include <dirent.h>
+#endif
+
+// ------------------------------- Utility methods ---------------------------------- //
+
+string intToStr(int a)
+{
+    stringstream ss;
+    ss << a;
+
+    return ss.str();
+}
 
 bool hasData(string line)
 {
-    return (line[0] != '#' && line[0] != ' ' && line.size() > 0);
+    return (line.size() > 0 && line[0] != '#' && line[0] != ' ');
 }
 
 string getClassId(string folderName)
@@ -35,122 +54,270 @@ bool inSet(string s, set<string> words)
     return !(words.find(s) == words.end());
 }
 
+bool inPredClasses(string real, vector< pair<string, double> > pred)
+{
+    for (int i = 0; i < pred.size(); i++)
+        if (real == pred[i].first) return true;
+
+    return false;
+}
+
+// ------------------------------- Class methods ---------------------------------- //
+
+vector<string> Classifier::getFilesFromFolder(string folderName)
+{
+	vector<string> filenames;
+
+#ifdef WIN32
+	const int maxLength = 1024;
+	TCHAR szDir[maxLength];
+	StringCchCopy(szDir, maxLength, folderName.c_str());
+	StringCchCat(szDir, maxLength, TEXT("\\*"));
+
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = INVALID_HANDLE_VALUE;
+	hFind = FindFirstFile(szDir, &ffd);
+	
+	if (INVALID_HANDLE_VALUE == hFind) {
+		fprintf(stderr, "FindFirstFile error");
+		return filenames;
+	} 
+
+	do {
+		if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+			string filename = ffd.cFileName;
+			if (filename.find("jpg")) {
+				filenames.push_back(ffd.cFileName);
+			}
+		}
+	}
+	while (FindNextFile(hFind, &ffd) != 0);
+
+	FindClose(hFind);
+#else
+	DIR *d;
+	struct dirent* dirent;
+
+	d = opendir(folderName.c_str());
+	if (!d) {
+		fprintf(stderr, "Invalid directory %s", folderName.c_str());
+		return filenames;
+	} else {
+		while ((dirent = readdir(d)) != NULL) {
+			if (isFile(dirent->d_name)) {
+			        string filename(dirent->d_name);
+			        filenames.push_back(filename);
+			}
+		}
+		closedir(d);
+	}
+#endif
+
+	return filenames;
+}
+
 int Classifier::loadData(string testConf, string pathToSil)
 {
-    // Open file with testing configuration
+     // Open file with testing configuration
     ifstream tcStream(testConf.c_str());
     if (!tcStream.is_open())
     {
-        printf ("Could not open %s\n", testConf.c_str());
+        fprintf (stderr, "Could not open %s\n", testConf.c_str());
         return 1;
     }
 
     string classId;
     string folderName;
     set<string> testImgsNames;
-
     while (tcStream.good())
     {
         // Skip comments and empty lines
         string line;
         getline(tcStream, line);
-        if (!hasData(line))
+        if (!hasData(line)) 
             continue;
-        else
+        else 
         {
-            // Get folder name
-            folderName = line;
-            classId = getClassId(folderName);
+            folderName = line;                  // Get folder name
+            classId = getClassId(folderName);   // Get classId
 
-            // Get testing images names
-            while(tcStream.good())
+            testImgsNames.clear();
+            while (tcStream.good())             // Get names of test images
             {
                 getline(tcStream, line);
-                if (!hasData(line))
-                    break;
-
+                if(!hasData(line)) break;
+                
                 testImgsNames.insert(line);
             }
         }
 
-        cout << "Folder name: " << folderName << endl;
-        cout << "classID: " << classId << endl;
-        cout << "----" << endl;
-
         // Get pictures from folder
-        DIR *Dir;
-        struct dirent *DirEntry;
-        string dirPath = pathToSil + folderName;
+	string dirPath = pathToSil + folderName;
+	const vector<string>& filenames = getFilesFromFolder(dirPath);
+       
+#ifdef WIN32
 
-        Dir = opendir(dirPath.c_str());
-        if (Dir == NULL)
+        dirPath += "\\";
+#else
+        dirPath += "/";
+
+#endif
+
+        for (int i = 0; i < (int) filenames.size(); i++) 
         {
-            printf ("Directory %s cannot be opened\n", dirPath.c_str());
-            return 2;
-        }
-
-        while(DirEntry = readdir(Dir))
-        {
-            if (!isFile(DirEntry->d_name))
-                continue;
-
             // Store image to corresponding set (test or learning)
-            string imgName(DirEntry->d_name);
+            string imgName = filenames[i];
+            string imgPath = dirPath + imgName;
+
             if (inSet(imgName, testImgsNames))
             {
-                testData[classId].push_back( imread(imgName, 1) );
-                cout << "test: " << imgName << endl;
+                testData[classId].push_back( imread(imgPath, 1) );
             }
             else
             {
-                learningData[classId].push_back( imread(imgName, 1) );
-                cout << "learn: " << imgName << endl;
+                learningData[classId].push_back( imread(imgPath, 1) );
             }
         }
-        cout << "-------------------------------" << endl;
-        cout << endl;
-
     }
-    
+
     // Everything went ok
     return 0;
 }
 
-int Classifier::countWrongs()
-{
-    // Count wrongs
-    int wrong = 0;
-    
-    map< string, vector<Mat> >::iterator iter;
-    for (iter = testData.begin(); iter != testData.end(); iter++)
-    {
-        string realClassId = iter->first;
-        vector<Mat>& imgs = iter->second;
-
-        for (int i = 0; i < imgs.size(); i++)
-        {
-            string predClassId = classify(imgs[i]);
-            if (realClassId != predClassId) wrong ++;
-        }
-    }
-
-    return wrong;
-}
-
-int Classifier::test(string testConf, string pathToSil)
+int Classifier::test(string testConf, int resNum, string pathToSil, string reportPath)
 {
     // Load data
     int status = loadData(testConf, pathToSil);
     if (status != 0)
     {
-        printf ("Error occured!\n");
+        printf ("Error occured while loading data!\n");
         return -1;
     }
 
     // Learn classifier
     learn(learningData);
 
-    // Evaluate
-    int wrong = countWrongs();
+    // Acquire statistics
+    int wrong = 0;                      // Number of wrong classifications
+    int total = 0;                      // Total number of test cases
+    ConfusionMatrix confusionMat;
+
+    map< string, vector<Mat> >::iterator iter;
+    for (iter = testData.begin(); iter != testData.end(); iter++)
+    {
+        string realClassId = iter->first;
+        vector<Mat>& imgs = iter->second;
+
+        for (int i = 0; i < imgs.size(); i++, total++)
+        {
+            // Get classifier output for single test img
+            vector< pair<string, double> > predClasses = classify(imgs[i], resNum);
+
+            // Wrong if not equal to any of predicted classes
+            if (!inPredClasses(realClassId, predClasses)) wrong++;
+
+            // Update confusion matrix - take only best match
+            string predClassId = predClasses[0].first;
+            confusionMat[predClassId][realClassId] += 1;
+        }
+    }
+
+    // Generate report
+    status = generateReport(confusionMat, wrong, total, reportPath);
+    if (status != 0)
+    {
+        printf ("Error occured while generating report!\n");
+        return -1;
+    }
+
     return wrong;
+}
+
+vector<string> Classifier::getClassIDs()
+{
+    vector<string> keys;
+
+    map< string, vector<Mat> >::iterator iter;
+    for (iter = learningData.begin(); iter != learningData.end(); iter++)
+    {
+        keys.push_back(iter->first);
+    }
+
+    return keys;
+}
+
+
+int Classifier::generateReport(ConfusionMatrix& confusionMat, int wrong, int total, string repPath)
+{
+    // Open file to store report
+    ofstream reportFile(repPath.c_str());
+    if (!reportFile.is_open())
+    {
+       fprintf(stderr, "Cannot open file %s to store report", repPath.c_str());
+       return 1;
+    }
+
+    // Store confusion matrix as HTML table
+    reportFile << confusionMatrixToHTML(confusionMat);
+    reportFile << "\n\n";
+    
+    // Store correctness
+    int correct = total - wrong;
+    reportFile << "Correctness: " << correct << "/" << total << " -> ";
+    reportFile << correct / (double) total << endl;
+
+    reportFile.close();
+
+    // Everything went ok
+    return 0;
+}
+
+string Classifier::confusionMatrixToHTML(ConfusionMatrix& confusionMat)
+{
+    string HTMLrep = "";
+
+    // Get keys (classIDs)
+    vector<string> classIDs = getClassIDs();
+
+    // ---------------------------------- Generate HTML ------------------------------- //
+
+    // Print header
+    HTMLrep += "<table border=\"1\" style=\"border-collapse:collapse\">\n";
+
+    HTMLrep += "<tr>\n";
+
+        HTMLrep += "\t<th/>\n";    
+        for (int i = 0; i < classIDs.size(); i++)
+            HTMLrep += "\t<th>" + classIDs[i] + "</th>\n";
+
+    HTMLrep += "</tr>\n";
+
+
+    // Print table content
+    for (int predIdx = 0; predIdx < classIDs.size(); predIdx++)
+    {
+        HTMLrep += "<tr>\n";
+            HTMLrep += "\t<th>" + classIDs[predIdx] + "</th>\n";
+        
+            // Write each value of row
+            for (int realIdx = 0; realIdx < classIDs.size(); realIdx++)
+            {
+                // Get keys for confusion matrix
+                string predName = classIDs[predIdx];
+                string realName = classIDs[realIdx];
+                
+                // Convert int to string
+                string val = intToStr(confusionMat[predName][realName]);
+
+                // Print value
+                HTMLrep += "\t<td align=\"center\">" + val + "</td>\n";
+            }
+        HTMLrep += "</tr>\n";
+    }
+
+    // Print closing stuff
+    HTMLrep += "</table>";
+
+    // Everything went ok
+    return HTMLrep;
 }

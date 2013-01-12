@@ -14,11 +14,16 @@ using namespace cv;
 void getFeatures(Mat&);
 void printUsage();
 void printFeatureValues();
+int getHeadWidth();
+int getHeadHeight();
+int getMaxHeight();
+int getMaxWidth();
 
 Mat a;
 vector <int> heights;
 vector <int> widths;
 int maxWidth, maxHeight; //though it can be extracted from heights&widths
+int headHeight;
 
 int main(int argc, char **argv) {
 
@@ -28,10 +33,16 @@ int main(int argc, char **argv) {
   }
 
   a = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
+  a = a.t();
 
   getFeatures( a );
 
   printFeatureValues();
+
+  cout << "Head width: " << getHeadWidth() << endl;
+  cout << "Head height: " << getHeadHeight() << endl;
+  cout << getMaxWidth() << endl;
+  cout << getMaxHeight() << endl;
 
   return 0;
 
@@ -63,11 +74,11 @@ void getFeatures(Mat& a) {
         rowLastWhite[ i ] = j;
 
         if( colFirstWhite[ j ] < 0 ) {
-	  colFirstWhite[ j ] = i;
+          colFirstWhite[ j ] = i;
         }
         if( i > colLastWhite[ j ] ) {
- 	  colLastWhite[ j ] = i;
-	}
+          colLastWhite[ j ] = i;
+        }
 	
       }
     }
@@ -106,8 +117,8 @@ void printFeatureValues() {
   cout << endl;
  
   cout << "Widths of white rows of the picture: " << endl;
-  for( int i = 0; i < heights.size(); i++ ) {
-    cout << heights[ i ] << " ";
+  for( int i = 0; i < widths.size(); i++ ) {
+    cout << widths[ i ] << " ";
   }
   cout << endl;
 
@@ -115,3 +126,68 @@ void printFeatureValues() {
   cout << "Max width: " << maxWidth << endl;
   cout << endl;
 }
+
+int getHeadWidth() {
+
+  headHeight = -1;
+
+  if( widths.size() == 0 ) {
+    cout << "getFeatures wasn't called first or no\
+             widths extracted from silhouette" << endl;
+    return -1;
+  }
+  
+  int i = 0;
+  int maxHeadWidth = 0;
+  while( widths[ i + 1 ] > widths[ i ] || 
+         abs( widths[ i + 1 ] - maxHeadWidth ) < (int)( maxHeadWidth * 0.03 )  ) {
+    if( widths[ i + 1 ] > widths[ i ] ) {
+      maxHeadWidth = widths[ i + 1 ];
+    }
+    i++;
+  }
+
+  float tolerance = 0.2;
+
+  int limit = maxHeadWidth;
+  for( ; i < widths.size() ; ) {
+    if( widths[ i ] < (int)(limit * (1. - tolerance)) ) {
+      break;
+    } else if( widths[ i ] > maxHeadWidth ) {
+      if( widths[ i ] > (int)(limit * (1. + tolerance)) ) {
+        break;
+      }
+      maxHeadWidth = widths[ i ];
+    }
+    i++;
+  }  
+
+  headHeight = i;
+
+  return maxHeadWidth;
+}
+
+int getHeadHeight() {
+  return headHeight;
+}
+
+int getMaxHeight() {
+   
+  if( heights.size() == 0 ) {
+    cout << "getFeatures wasn't called first or no\
+             heights extracted from silhouette" << endl;
+    return -1;
+  }
+  return maxHeight;
+}
+
+int getMaxWidth() {
+   
+  if( widths.size() == 0 ) {
+    cout << "getFeatures wasn't called first or no\
+             widths extracted from silhouette" << endl;
+    return -1;
+  }
+  return maxWidth;
+}
+
