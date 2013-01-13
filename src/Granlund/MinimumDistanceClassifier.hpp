@@ -26,7 +26,7 @@ public:
 	 *  @param  learningData    
 	 */
 
-	void learn(map< string, vector<Mat> >& learningData);
+	void learn(map< string, vector<Mat> >& learningData, void* param);
 
 private:
 	/**

@@ -44,7 +44,7 @@ vector< pair<string, double> > MinimumDistanceClassifier::classify(Mat img, int 
 	return results;
 }
 
-void MinimumDistanceClassifier::learn(map< string, vector<Mat> >& learningData) 
+void MinimumDistanceClassifier::learn(map< string, vector<Mat> >& learningData, void* param) 
 {
 	map< string, vector<Mat> >::iterator classId;
 	vector<Point> contour;
