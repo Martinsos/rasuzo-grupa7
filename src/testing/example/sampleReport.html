@@ -1,19 +1,53 @@
-<table border="1" style="border-collapse:collapse">
+<table border="1" cellpadding="5" style="border-collapse:collapse">
 <tr>
-	<th/>
+	<th>Pred / Real</th>
 	<th>sil1_zorana_NEVALJA</th>
 	<th>sil2_hrvoje</th>
 </tr>
 <tr>
 	<th>sil1_zorana_NEVALJA</th>
-	<td align="center">0</td>
-	<td align="center">0</td>
+	<td align="center" style="background-color:#85FF5C">0</td>
+	<td align="center" style="background-color:white">0</td>
 </tr>
 <tr>
 	<th>sil2_hrvoje</th>
-	<td align="center">0</td>
-	<td align="center">0</td>
+	<td align="center" style="background-color:white">1</td>
+	<td align="center" style="background-color:#85FF5C">3</td>
 </tr>
 </table>
+<br>
+Correctness (only the best): 3/4 = 0.75<br><br>
 
-Correctness: 0/4 -> 0
+Correctness (in <strong>2</strong> best): 3/4 = 0.75<br><br>
+
+<table border="1" cellpadding="5" style="border-collapse:collapse">
+<tr>
+	<th>Img ID</th>
+	<th>Class name</th>
+	<th>1</th>
+	<th>2</th>
+</tr>
+<tr>
+	<th>1</th>
+	<td>sil1_zorana_NEVALJA</td>
+	<td align="center">sil2_hrvoje : <strong>0.93 </strong> </td>
+	<td align="center">sil2_zorana : <strong>0.07 </strong> </td>
+</tr>
+<tr>
+	<th>2</th>
+	<td>sil2_hrvoje</td>
+	<td align="center">sil2_hrvoje : <strong>0.93 </strong> </td>
+	<td align="center">sil2_zorana : <strong>0.07 </strong> </td>
+</tr>
+<tr>
+	<th>3</th>
+	<td>sil2_hrvoje</td>
+	<td align="center">sil2_hrvoje : <strong>0.93 </strong> </td>
+	<td align="center">sil2_zorana : <strong>0.07 </strong> </td>
+</tr>
+<tr>
+	<th>4</th>
+	<td>sil2_hrvoje</td>
+	<td align="center">sil2_hrvoje : <strong>0.93 </strong> </td>
+	<td align="center">sil2_zorana : <strong>0.07 </strong> </td>
+</tr>

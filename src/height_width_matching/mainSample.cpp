@@ -1,13 +1,12 @@
+#include "HWMatching.hpp"
 
-#include "SampleClassifier.hpp"
-
-int main(int argc, char const *argv[])
+int main(int argc, char const *argv[] )
 {
     // Create instance of Classifier
-    Classifier* sampleCl = new SampleClassifier();
-    
+    Classifier* sampleCl = new HWMatching();
+
     // Count wrong classifications
-    int wrongs = sampleCl->test("testConfSample.txt", 2, "../../../siluete/", "sampleReport.html");
+    int wrongs = sampleCl->test("testConfSample.txt", 3, "../../siluete/", "sampleReport.html");
 
     // VAZNO!!
     // Vazno je da path do silueta na kraju ima ovaj slash (ili backslash, ovisno o OS), inace vam nece raditi.
@@ -15,3 +14,4 @@ int main(int argc, char const *argv[])
     cout << "Number of wrong classifications: " << wrongs << endl;
     return 0;
 }
+

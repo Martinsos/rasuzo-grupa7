@@ -1,0 +1,13 @@
+# Testing configuration file
+#
+#   Format: folderName
+#           picture to be classified
+#
+  
+sil1_zorana_NEVALJA
+sil_PC200006.jpg
+
+sil2_hrvoje
+sil_PC200014.jpg
+sil_PC200017.jpg
+sil_PC200018.jpg

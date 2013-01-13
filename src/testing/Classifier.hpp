@@ -24,7 +24,7 @@ class Classifier
          *  Loops through all examples and classifies them
          *
          *  @param  testConf    Path to file holding testing configuration 
-         *  @param  resNum      Number of best resulst to look at
+         *  @param  resNum      Number of best results to look at
          *  @param  pathToSil   Path to folder with silhouettes
          *  @param  reportPath  Path where is HTML report stored
          *
@@ -34,7 +34,7 @@ class Classifier
 
         /** Classifies given example
          *
-         *  @param  imageName   Name of image to classify
+         *  @param  img         Image to classify
          *  @param  resNum      Number of results to return
          *
          *  @returns            Ids of identified classses, sorted starting from the best.
@@ -73,6 +73,29 @@ class Classifier
         typedef map < string, map<string, int> > ConfusionMatrix;
         string confusionMatrixToHTML(ConfusionMatrix& confusionMat);
 
+
+        /** Generates HTML table for given classification results
+         *
+         *  @param  clRes   Classification results 
+         *  @param  resNum  Number of results returned by classifier for each test
+         *  @returns        String with HTML record
+         */
+        typedef vector< pair < string, vector< pair<string, double> > > > ClassifResults;
+        string classifResultsToHTML(ClassifResults& clRes, int resNum);
+
+
+        /** Generates report to given path.
+         *  So far, report consists of confusion matrix.
+         *
+         *  @param  confusionMatrix Confusion matrix 
+         *  @param  repPath         Path of report file 
+         *  @returns                status - 0 if everyhting ok
+         */
+        int generateReport(ConfusionMatrix& confusionMat, int wrong, int total, string repPath,
+                           int resNum, ClassifResults& clRes, int wrongStrict);
+
+        // ----------------------------------------------------------------------- //
+
         /**
          * Returns the files from given folder.
          * Implementation is OS independant
@@ -87,14 +110,6 @@ class Classifier
          */
         vector<string> getClassIDs();
 
-        /** Generates report to given path.
-         *  So far, report consists of confusion matrix.
-         *
-         *  @param  confusionMatrix Confusion matrix 
-         *  @param  repPath         Path of report file 
-         *  @returns                status - 0 if everyhting ok
-         */
-        int generateReport(ConfusionMatrix& confusionMat, int wrong, int total, string repPath);
 
 };
 
