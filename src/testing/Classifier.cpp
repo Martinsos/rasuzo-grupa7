@@ -281,13 +281,13 @@ int Classifier::generateReport(ConfusionMatrix& confusionMat, int wrong, int tot
     int correctStrict = total - wrongStrict;
     reportFile << "Correctness " <<  "(only the best): " 
                << correctStrict << "/" << total << " = ";
-    reportFile << correctStrict / (double) total << "<br><br>\n\n";
+    reportFile << "<strong>" << correctStrict / (double) total << "</strong>" << "<br><br>\n\n";
 
     // Store correctness
     int correct = total - wrong;
     reportFile << "Correctness " <<  "(in <strong>" << resNum << "</strong> best): " 
                << correct << "/" << total << " = ";
-    reportFile << correct / (double) total << "<br><br>\n\n";
+    reportFile << "<strong>" << correct / (double) total << "</strong>" << "<br><br>\n\n";
 
     // Store classification results
     reportFile << classifResultsToHTML(clRes, resNum);
@@ -336,7 +336,11 @@ string Classifier::confusionMatrixToHTML(ConfusionMatrix& confusionMat)
 
                 // Print value
                 string tdColor = "white";
-                if (predIdx == realIdx) tdColor = "#85FF5C";
+                if (predIdx == realIdx)     // Mark diagonal elements 
+                {
+                    tdColor = "#85FF5C";                    // Bold         
+                    val = "<strong>" + val + "</strong>";   // Color
+                }
 
                 HTMLrep += "\t<td align=\"center\" style=\"background-color:"+tdColor+"\"" + ">" + val + "</td>\n";
             }
@@ -377,7 +381,7 @@ string Classifier::classifResultsToHTML(ClassifResults& clRes, int resNum)
             HTMLrep += "\t<th>" + intToStr(resIdx + 1) + "</th>\n";
             
             string className = clRes[resIdx].first;
-            vector< pair<string, double> > results   = clRes[resIdx].second;
+            vector< pair<string, double> > results = clRes[resIdx].second;
 
             // Print class of image
             HTMLrep += "\t<td>" + className + "</td>\n";
