@@ -17,7 +17,8 @@ vector< pair<string, double> > SampleClassifier::classify(Mat img, int resNum)
     // Ako je klasifikator takav da ne vraca nikakvu vrijednost, stavite -1 ili nesto bzvz po zelji.
 
     vector< pair<string, double> > ret;
-    ret.push_back(make_pair("sil1_zorana", 0.93));
+    ret.push_back(make_pair("sil2_hrvoje", 0.93));
+    ret.push_back(make_pair("sil2_zorana", 0.07));  // Pazite koliki je resNum, toliko rezultata treba vratiti!
 
     return ret;
 }
