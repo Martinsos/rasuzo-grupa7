@@ -7,6 +7,7 @@
 #include<algorithm>
 #include<queue>
 #include<utility>
+#include "HWMatching.hpp"
 
 using namespace std;
 using namespace cv;
@@ -25,7 +26,36 @@ vector <int> widths;
 int maxWidth, maxHeight; //though it can be extracted from heights&widths
 int headHeight;
 
-int main(int argc, char **argv) {
+vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
+
+  vector< pair<string, double> > ret;
+  ret.push_back(make_pair("sil", 0.0));
+
+  return ret;
+}
+
+
+void HWMatching::learn(map< string, vector<Mat> >& learningData) {
+
+  map< string, vector<Mat> >::iterator iter;
+
+  for (iter = learningData.begin(); iter != learningData.end(); iter++) {
+    string realClassId = iter->first;
+    vector<Mat>& imgs = iter->second;
+
+    for( int i = 0; i < imgs.size(); i++ ) {
+      a = imgs[ i ];
+      a = a.t();
+
+      getFeatures( a );
+      //printFeatureValues();
+
+    }
+  }
+
+}
+
+/*int main(int argc, char **argv) {
 
   if( argc < 2 ) {
     printUsage();
@@ -46,7 +76,7 @@ int main(int argc, char **argv) {
 
   return 0;
 
-}
+}*/
 
 void printUsage() {
   cout << "Usage: ./progname <path_to_siluethe>";
