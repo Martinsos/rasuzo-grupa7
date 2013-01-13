@@ -39,6 +39,8 @@ struct Example {
 
 #define K_HEAD_HEIGHT "k_head_height"
 #define K_HEAD_WIDTH "k_head_width"
+#define K_MAX_HEIGHT "k_max_height"
+#define K_MAX_WIDTH "k_max_width"
 
 vector <Example> learningSet;
 
@@ -51,16 +53,23 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
   getFeatures( testMat );
   testExample.features[ K_HEAD_HEIGHT ] = getHeadHeight();
   testExample.features[ K_HEAD_WIDTH ] = getHeadWidth();
+  testExample.features[ K_MAX_HEIGHT ] = getMaxHeight();
+  testExample.features[ K_MAX_WIDTH ] = getMaxWidth();
     
   vector < pair<double, string> > error;
   for( int i = 0; i < learningSet.size(); i++ ) {
     double errorSum = 0.0;
 
+    errorSum += sqr( testExample.features[ K_MAX_HEIGHT ] -
+                     learningSet[ i ].features[ K_MAX_HEIGHT ] );
+    errorSum += sqr( testExample.features[ K_MAX_WIDTH ] - 
+                     learningSet[ i ].features[ K_MAX_WIDTH ] );
+    
     errorSum += sqr( testExample.features[ K_HEAD_HEIGHT ] -
                      learningSet[ i ].features[ K_HEAD_HEIGHT ] );
     errorSum += sqr( testExample.features[ K_HEAD_WIDTH ] - 
                      learningSet[ i ].features[ K_HEAD_WIDTH ] );
-
+    
     error.push_back( make_pair( errorSum, learningSet[ i ].name ) );
   }
 
@@ -92,8 +101,10 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData) {
       Example current;
       current.name = realClassId;
 
-      current.features[ K_HEAD_HEIGHT] = getHeadHeight();
+      current.features[ K_HEAD_HEIGHT ] = getHeadHeight();
       current.features[ K_HEAD_WIDTH ] = getHeadWidth();
+      current.features[ K_MAX_HEIGHT ] = getMaxHeight();
+      current.features[ K_MAX_WIDTH ] = getMaxWidth(); 
 
       learningSet.push_back( current );
 
