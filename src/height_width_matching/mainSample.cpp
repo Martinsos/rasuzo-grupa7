@@ -6,7 +6,7 @@ int main(int argc, char const *argv[] )
     Classifier* sampleCl = new HWMatching();
 
     // Count wrong classifications
-    int wrongs = sampleCl->test("testConfSample.txt", 3, "../../siluete/", "sampleReport.html");
+    int wrongs = sampleCl->test("testConfFull.txt", 2, "../../siluete/", "sampleReport.html");
 
     // VAZNO!!
     // Vazno je da path do silueta na kraju ima ovaj slash (ili backslash, ovisno o OS), inace vam nece raditi.
