@@ -20,16 +20,56 @@ int getHeadHeight();
 int getMaxHeight();
 int getMaxWidth();
 
+double sqr( double x ) {
+  return x*x;
+}
+
 Mat a;
 vector <int> heights;
 vector <int> widths;
 int maxWidth, maxHeight; //though it can be extracted from heights&widths
 int headHeight;
 
+struct Example {
+  // featureName -> featureValue
+  map< string, double > features;
+
+  string name;
+};
+
+#define K_HEAD_HEIGHT "k_head_height"
+#define K_HEAD_WIDTH "k_head_width"
+
+vector <Example> learningSet;
+
 vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
 
   vector< pair<string, double> > ret;
-  ret.push_back(make_pair("sil", 0.0));
+
+  Mat testMat = img.t();
+  Example testExample;
+  getFeatures( testMat );
+  testExample.features[ K_HEAD_HEIGHT ] = getHeadHeight();
+  testExample.features[ K_HEAD_WIDTH ] = getHeadWidth();
+    
+  vector < pair<double, string> > error;
+  for( int i = 0; i < learningSet.size(); i++ ) {
+    double errorSum = 0.0;
+
+    errorSum += sqr( testExample.features[ K_HEAD_HEIGHT ] -
+                     learningSet[ i ].features[ K_HEAD_HEIGHT ] );
+    errorSum += sqr( testExample.features[ K_HEAD_WIDTH ] - 
+                     learningSet[ i ].features[ K_HEAD_WIDTH ] );
+
+    error.push_back( make_pair( errorSum, learningSet[ i ].name ) );
+  }
+
+  sort( error.begin(), error.end() );
+
+  for( int i = 0; i < error.size(); i++ ) {
+    ret.push_back( make_pair( error[ i ].second, error[ i ].first ) );
+  } 
+
 
   return ret;
 }
@@ -48,7 +88,14 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData) {
       a = a.t();
 
       getFeatures( a );
-      //printFeatureValues();
+      
+      Example current;
+      current.name = realClassId;
+
+      current.features[ K_HEAD_HEIGHT] = getHeadHeight();
+      current.features[ K_HEAD_WIDTH ] = getHeadWidth();
+
+      learningSet.push_back( current );
 
     }
   }
@@ -115,7 +162,7 @@ void getFeatures(Mat& a) {
   }
 
   maxHeight = 0;
-
+  heights.clear();
   for( int i = 0; i < rowFirstWhite.size(); i++ ) {
     int height = rowLastWhite[ i ] - rowFirstWhite[ i ];
     if( height ) {
@@ -127,6 +174,7 @@ void getFeatures(Mat& a) {
   }  
 
   maxWidth = 0;
+  widths.clear();
   for( int i = 0; i < colFirstWhite.size(); i++ ) {
     int width = colLastWhite[ i ] - colFirstWhite[ i ];
     if( width ) { 
@@ -154,6 +202,8 @@ void printFeatureValues() {
 
   cout << "Max height: " << maxHeight << endl;
   cout << "Max width: " << maxWidth << endl;
+  cout << "Head height: " << getHeadHeight << endl;
+  cout << "Head width" << getHeadWidth << endl;
   cout << endl;
 }
 
@@ -166,10 +216,10 @@ int getHeadWidth() {
              widths extracted from silhouette" << endl;
     return -1;
   }
-  
+
   int i = 0;
-  int maxHeadWidth = 0;
-  while( widths[ i + 1 ] > widths[ i ] || 
+  int maxHeadWidth = 10;
+  while( widths[ i + 1 ] >= widths[ i ] || 
          abs( widths[ i + 1 ] - maxHeadWidth ) < (int)( maxHeadWidth * 0.03 )  ) {
     if( widths[ i + 1 ] > widths[ i ] ) {
       maxHeadWidth = widths[ i + 1 ];
