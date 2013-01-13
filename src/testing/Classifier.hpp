@@ -27,6 +27,7 @@ class Classifier
          *  @param  resNum      Number of best results to look at
          *  @param  pathToSil   Path to folder with silhouettes
          *  @param  reportPath  Path where is HTML report stored
+         *  @param  param       Used for giving parameters to learn() method
          *
          *  @returns            Number of correctly classified examples
          */
@@ -46,6 +47,7 @@ class Classifier
         /** Learns classifier
          *
          *  @param  learningData    
+         *  @param  param           Parameters for learning process
          */
         virtual void learn(map< string, vector<Mat> >& learningData, void* param) = 0;
     
