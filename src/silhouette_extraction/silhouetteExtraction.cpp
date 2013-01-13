@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 	/* */
 
 	namedWindow("Slika (kalibrirana)", CV_WINDOW_AUTOSIZE);
-	imshow("Slika (kalibrirana)", aCal);  
+	imshow("Slika (kalibrirana)", aCal);
 	createTrackbar( "blur1", "Slika (kalibrirana)", &blurf1, 10, thresh_callback);
 	createTrackbar( "blur2", "Slika (kalibrirana)", &blurf2, 10, thresh_callback);
 	createTrackbar( "thresh", "Slika (kalibrirana)", &thresh, 255, thresh_callback);
