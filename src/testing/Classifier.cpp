@@ -196,7 +196,7 @@ int Classifier::loadData(string testConf, string pathToSil)
     return 0;
 }
 
-int Classifier::test(string testConf, int resNum, string pathToSil, string reportPath)
+int Classifier::test(string testConf, int resNum, string pathToSil, string reportPath, void* param /*= NULL*/)
 {
     // Load data
     int status = loadData(testConf, pathToSil);
@@ -207,7 +207,7 @@ int Classifier::test(string testConf, int resNum, string pathToSil, string repor
     }
 
     // Learn classifier
-    learn(learningData);
+    learn(learningData, param);
 
     // Acquire statistics
     int wrong = 0;                      // Number of wrong classifications (in best resNum)

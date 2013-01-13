@@ -23,7 +23,7 @@ vector< pair<string, double> > SampleClassifier::classify(Mat img, int resNum)
     return ret;
 }
 
-void SampleClassifier::learn(map< string, vector<Mat> >& learningData)
+void SampleClassifier::learn(map< string, vector<Mat> >& learningData, void* param)
 {
     /** Ovo je metoda gdje stvorite strukture specificne za svoj konkretni klasifikator.
      *  

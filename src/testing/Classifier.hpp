@@ -30,7 +30,7 @@ class Classifier
          *
          *  @returns            Number of correctly classified examples
          */
-        int test(string testConf, int resNum, string pathToSil, string reportPath);
+        int test(string testConf, int resNum, string pathToSil, string reportPath, void* param = NULL);
 
         /** Classifies given example
          *
@@ -47,7 +47,7 @@ class Classifier
          *
          *  @param  learningData    
          */
-        virtual void learn(map< string, vector<Mat> >& learningData) = 0;
+        virtual void learn(map< string, vector<Mat> >& learningData, void* param) = 0;
     
     protected:
         map< string, vector<Mat> > learningData;
