@@ -24,7 +24,7 @@ class Classifier
          *  Loops through all examples and classifies them
          *
          *  @param  testConf    Path to file holding testing configuration 
-         *  @param  resNum      Number of best resulst to look at
+         *  @param  resNum      Number of best results to look at
          *  @param  pathToSil   Path to folder with silhouettes
          *  @param  reportPath  Path where is HTML report stored
          *

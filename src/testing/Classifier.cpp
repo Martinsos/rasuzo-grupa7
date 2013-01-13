@@ -210,7 +210,7 @@ int Classifier::test(string testConf, int resNum, string pathToSil, string repor
 
         for (int i = 0; i < imgs.size(); i++, total++)
         {
-            // Get classifier output for single test img
+            // Get classifier output for single test image
             vector< pair<string, double> > predClasses = classify(imgs[i], resNum);
 
             // Wrong if not equal to any of predicted classes
@@ -291,7 +291,6 @@ string Classifier::confusionMatrixToHTML(ConfusionMatrix& confusionMat)
             HTMLrep += "\t<th>" + classIDs[i] + "</th>\n";
 
     HTMLrep += "</tr>\n";
-
 
     // Print table content
     for (int predIdx = 0; predIdx < classIDs.size(); predIdx++)
