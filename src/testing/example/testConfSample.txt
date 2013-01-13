@@ -4,7 +4,7 @@
 #           picture to be classified
 #
   
-sil1_zorana
+sil1_zorana_NEVALJA
 sil_PC200006.jpg
 
 sil2_hrvoje

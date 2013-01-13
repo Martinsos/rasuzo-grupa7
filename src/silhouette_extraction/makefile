@@ -1,5 +1,12 @@
+OPENCVLIB=`pkg-config --libs opencv`
 
-all: silhouetteExtraction
+all: silhouetteExtraction 
 
-silhouetteExtraction: silhouetteExtraction.cpp
-		g++ -o silhouetteExtraction silhouetteExtraction.cpp `pkg-config --libs opencv`
+silhouetteExtraction: main.cpp silhouetteExtraction.o
+		g++ -o silhouetteExtraction main.cpp silhouetteExtraction.o ${OPENCVLIB}
+
+silhouetteExtraction.o: silhouetteExtraction.cpp silhouetteExtraction.hpp
+		g++ -c silhouetteExtraction.cpp ${OPENCVLIB}
+
+clean:
+		rm *.o
