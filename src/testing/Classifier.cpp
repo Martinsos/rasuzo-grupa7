@@ -177,15 +177,19 @@ int Classifier::loadData(string testConf, string pathToSil)
             string imgName = filenames[i];
             string imgPath = dirPath + imgName;
 
+            Mat imgMat = imread(imgPath, 1);
             if (inSet(imgName, testImgsNames))
             {
-                testData[classId].push_back( imread(imgPath, 1) );
+                testData[classId].push_back(imgMat);
             }
             else
             {
-                learningData[classId].push_back( imread(imgPath, 1) );
+                learningData[classId].push_back(imgMat);
             }
         }
+
+        if (testData[classId].size() != testImgsNames.size())
+            fprintf(stderr, "Warning: Test set for %s is badly defined!\n", classId.c_str());
     }
 
     // Everything went ok
