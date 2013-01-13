@@ -8,29 +8,20 @@
 #include <string>
 #include <map>
 
+#include "AbstractAdapter.hpp"
+
 using namespace std;
 using namespace cv;
 
 
-class BayesAdapter {
+class BayesAdapter : AbstractAdapter {
 private:
     CvNormalBayesClassifier bayes;
-    vector<string> uniqueLabels;
 
 public:
-    /*
-     * Trains NormalBayesClasifier.
-     * @param examples Vector containing examples, each example is vector of floats.
-     * @param labels Vector containing labels, label at position i corresponds to example i.
-     */
-    BayesAdapter(vector< vector<float> >& examples, vector<string>& labels);
+    virtual void train (vector< vector<float> >& examples, vector<string>& labels);
 
-    /*
-     * Classifies given example.
-     * @param example
-     * @return Predicted label(class).
-     */
-    string classify(vector<float>& example);
+    virtual string classify(vector<float>& example);
 };
 
 #endif // BAYESADAPTER_HPP
