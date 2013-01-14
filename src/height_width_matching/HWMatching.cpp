@@ -8,6 +8,8 @@
 #include<queue>
 #include<utility>
 #include "HWMatching.hpp"
+#include "../Classifiers/BayesAdapter.hpp"
+#include "../Classifiers/SVMAdapter.hpp"
 
 using namespace std;
 using namespace cv;
@@ -43,14 +45,34 @@ struct Example {
 #define K_MAX_WIDTH "k_max_width"
 
 vector <Example> learningSet;
+string classifyMethod;
+BayesAdapter *adapter;
+SVMAdapter *svmAdapter;
 
 vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
 
   vector< pair<string, double> > ret;
 
+
   Mat testMat = img.t();
   Example testExample;
   getFeatures( testMat );
+  
+  vector <float> adapterExamples;
+  adapterExamples.push_back( getHeadHeight() );
+  adapterExamples.push_back( getHeadWidth() );
+  adapterExamples.push_back( getMaxHeight() );
+  adapterExamples.push_back( getMaxWidth() );
+
+
+  if( classifyMethod == "bayes" ) {
+    ret.push_back( make_pair( adapter->classify( adapterExamples ), 1 ) );
+    return ret;
+  } else if( classifyMethod == "svm" ) {
+    ret.push_back( make_pair( svmAdapter->classify( adapterExamples ), 1 ) );
+    return ret;
+  }
+
   testExample.features[ K_HEAD_HEIGHT ] = getHeadHeight();
   testExample.features[ K_HEAD_WIDTH ] = getHeadWidth();
   testExample.features[ K_MAX_HEIGHT ] = getMaxHeight();
@@ -84,7 +106,19 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
 }
 
 
-void HWMatching::learn(map< string, vector<Mat> >& learningData) {
+void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
+
+  string method = *((string *)param);  
+  classifyMethod = method;
+
+  if( method == "bayes" ) {
+    adapter = new BayesAdapter;
+  } else if( method == "svm" ) {
+    svmAdapter = new SVMAdapter;
+  } 
+
+  vector < vector<float> > adapterExamples;
+  vector < string > adapterLabels;
 
   map< string, vector<Mat> >::iterator iter;
 
@@ -106,9 +140,25 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData) {
       current.features[ K_MAX_HEIGHT ] = getMaxHeight();
       current.features[ K_MAX_WIDTH ] = getMaxWidth(); 
 
+      if( method != "" ) {
+        vector<float> v;
+        v.push_back( getHeadHeight() );
+        v.push_back( getHeadWidth() );
+        v.push_back( getMaxHeight() );
+        v.push_back( getMaxWidth() );
+        adapterExamples.push_back( v );
+        adapterLabels.push_back( realClassId );
+      }
+
       learningSet.push_back( current );
 
     }
+  }
+
+  if( method == "bayes" ) {
+    adapter->train( adapterExamples, adapterLabels );
+  } else if( method == "svm" ) {
+    svmAdapter->train( adapterExamples, adapterLabels );
   }
 
 }
