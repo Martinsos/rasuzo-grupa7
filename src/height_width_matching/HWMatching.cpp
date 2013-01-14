@@ -107,7 +107,7 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
 
   sort( error.begin(), error.end() );
 
-  for( int i = 0; i < error.size(); i++ ) {
+  for( int i = 0; i < error.size() && i < resNum; i++ ) {
     ret.push_back( make_pair( error[ i ].second, error[ i ].first ) );
   } 
 
