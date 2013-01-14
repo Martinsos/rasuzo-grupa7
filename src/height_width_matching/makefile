@@ -46,5 +46,7 @@ $(AP)BayesAdapter.hpp: $(AP)AbstractAdapter.hpp
 
 $(AP)SVMAdapter.hpp: $(AP)AbstractAdapter.hpp
 
+$(AP)KNNAdapter.hpp: $(AP)AbstractAdapter.hpp
+
 clean:
 		rm *.o
