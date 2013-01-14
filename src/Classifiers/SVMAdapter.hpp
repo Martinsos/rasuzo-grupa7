@@ -14,7 +14,7 @@ using namespace std;
 using namespace cv;
 
 
-class SVMAdapter : AbstractAdapter {
+class SVMAdapter : public AbstractAdapter {
 private:
     CvSVM svm;
 

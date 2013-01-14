@@ -13,130 +13,19 @@
 
 #include "granlundCoefficients.hpp"
 #include "granlundClassifiers.hpp"
-#include "../Classifiers/BayesAdapter.hpp"
-#include "../Classifiers/SVMAdapter.hpp"
 #include "../testing/Classifier.hpp"
 
 using namespace std;
 using namespace cv;
 
-BayesAdapter* bayes;
-SVMAdapter* svm;
 vector <vector <float> > training_data;
 vector <string> classes;
 
+// Parent class of various classifiers
+AbstractAdapter* classifier;
+
 // Granlund coefficients
 vector <pair <string, vector <complex <double> > > > gran_cof;
-
-vector< pair<string, double> > BayesClassifier::classify(Mat img, int resNum) {
-            vector <complex <double> > gran_cof_img;
-            vector <Point> contour;
-            int index;
-            vector< pair<string, double> > ret;
-            float data[8];
-            vector <float> gran_cof_vect;
-
-            contour = preparePicture(img);
-            gran_cof_img = granlundCoefficients(contour);
-
-            for (int j = 0; j < gran_cof_img.size(); j++) {
-                gran_cof_vect.push_back((float)gran_cof_img[j].real());
-                gran_cof_vect.push_back((float)gran_cof_img[j].imag());
-            }
-
-            string kl = bayes->classify(gran_cof_vect);
-            gran_cof_vect.clear();
-
-            ret.push_back(make_pair(kl,0));
-            return ret;
-}
-
-void BayesClassifier::learn(map< string, vector<Mat> >& learningData, void* param) {
-            Mat image;
-            vector <Point> contour;
-            vector <complex <double> > gran_cof_img;
-            map <string, vector<Mat> >::iterator data;
-            vector <float> gran_cof_vect;
-
-            int k = 0;
-            int count = 0;
-            for (data = learningData.begin(); data != learningData.end(); data++) {
-
-                for (int i = 0; i < (data->second).size(); i++) {
-                    classes.push_back(data->first);
-
-                    image = (data->second)[i];
-                    contour = preparePicture(image);
-                    gran_cof_img = granlundCoefficients(contour);
-
-                    for (int j = 0; j < gran_cof_img.size(); j++) {
-                        gran_cof_vect.push_back((float)gran_cof_img[j].real());
-                        gran_cof_vect.push_back((float)gran_cof_img[j].imag());
-                    }
-
-                    training_data.push_back(gran_cof_vect);
-                    gran_cof_vect.clear();
-                }
-            }
-
-            bayes = new BayesAdapter;
-            bayes -> train(training_data, classes);
-}
-
-vector< pair<string, double> > SVMClassifier::classify(Mat img, int resNum) {
-            vector <complex <double> > gran_cof_img;
-            vector <Point> contour;
-            int index;
-            vector< pair<string, double> > ret;
-            float data[8];
-            vector <float> gran_cof_vect;
-
-            contour = preparePicture(img);
-            gran_cof_img = granlundCoefficients(contour);
-
-            for (int j = 0; j < gran_cof_img.size(); j++) {
-                gran_cof_vect.push_back((float)gran_cof_img[j].real());
-                gran_cof_vect.push_back((float)gran_cof_img[j].imag());
-            }
-
-            string kl = bayes->classify(gran_cof_vect);
-            gran_cof_vect.clear();
-
-            ret.push_back(make_pair(kl,0));
-            return ret;
-}
-
-void SVMClassifier::learn(map< string, vector<Mat> >& learningData, void* param) {
-            Mat image;
-            vector <Point> contour;
-            vector <complex <double> > gran_cof_img;
-            map <string, vector<Mat> >::iterator data;
-            vector <float> gran_cof_vect;
-
-            int k = 0;
-            int count = 0;
-            for (data = learningData.begin(); data != learningData.end(); data++) {
-
-                for (int i = 0; i < (data->second).size(); i++) {
-                    classes.push_back(data->first);
-
-                    image = (data->second)[i];
-                    contour = preparePicture(image);
-                    gran_cof_img = granlundCoefficients(contour);
-
-                    for (int j = 0; j < gran_cof_img.size(); j++) {
-                        gran_cof_vect.push_back((float)gran_cof_img[j].real());
-                        gran_cof_vect.push_back((float)gran_cof_img[j].imag());
-                    }
-
-                    training_data.push_back(gran_cof_vect);
-                    gran_cof_vect.clear();
-                }
-            }
-
-            svm = new SVMAdapter;
-            svm -> train(training_data, classes);
-}
 
 vector< pair<string, double> > DistanceClassifier::classify(Mat img, int resNum) {
             vector <complex <double> > gran_cof_img;
@@ -148,7 +37,6 @@ vector< pair<string, double> > DistanceClassifier::classify(Mat img, int resNum)
 
             // First how many classes to return
             int first_n = 3;
-
 
             contour = preparePicture(img);
             gran_cof_img = granlundCoefficients(contour);
@@ -190,3 +78,63 @@ void DistanceClassifier::learn(map< string, vector<Mat> >& learningData, void* p
                 }
             }
 }
+
+vector< pair<string, double> > SpecificClassifier::classify(Mat img, int resNum) {
+            vector <complex <double> > gran_cof_img;
+            vector <Point> contour;
+            int index;
+            vector< pair<string, double> > ret;
+            float data[8];
+            vector <float> gran_cof_vect;
+
+            contour = preparePicture(img);
+            gran_cof_img = granlundCoefficients(contour);
+
+            for (int j = 0; j < gran_cof_img.size(); j++) {
+                gran_cof_vect.push_back((float)gran_cof_img[j].real());
+                gran_cof_vect.push_back((float)gran_cof_img[j].imag());
+            }
+
+            string kl = classifier->classify(gran_cof_vect);
+            gran_cof_vect.clear();
+
+            ret.push_back(make_pair(kl,0));
+            return ret;
+}
+
+void SpecificClassifier::learn(map< string, vector<Mat> >& learningData, void* param) {
+            Mat image;
+            vector <Point> contour;
+            vector <complex <double> > gran_cof_img;
+            map <string, vector<Mat> >::iterator data;
+            vector <float> gran_cof_vect;
+
+            int k = 0;
+            int count = 0;
+            for (data = learningData.begin(); data != learningData.end(); data++) {
+
+                for (int i = 0; i < (data->second).size(); i++) {
+                    classes.push_back(data->first);
+
+                    image = (data->second)[i];
+                    contour = preparePicture(image);
+                    gran_cof_img = granlundCoefficients(contour);
+
+                    for (int j = 0; j < gran_cof_img.size(); j++) {
+                        gran_cof_vect.push_back((float)gran_cof_img[j].real());
+                        gran_cof_vect.push_back((float)gran_cof_img[j].imag());
+                    }
+
+                    training_data.push_back(gran_cof_vect);
+                    gran_cof_vect.clear();
+                }
+            }
+
+            /*
+             * Inheritance in action
+             */
+
+            classifier = (AbstractAdapter*) param;
+            classifier -> train(training_data, classes);
+}
+

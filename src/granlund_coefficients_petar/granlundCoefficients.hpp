@@ -48,5 +48,4 @@ vector <Point> preparePicture(Mat img);
  */
 vector <complex <double> > granlundCoefficients(vector <Point> contour);
 
-
 #endif // GRANCOEF_HPP

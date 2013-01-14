@@ -14,7 +14,7 @@ using namespace std;
 using namespace cv;
 
 
-class BayesAdapter : AbstractAdapter {
+class BayesAdapter : public AbstractAdapter {
 private:
     CvNormalBayesClassifier bayes;
 
