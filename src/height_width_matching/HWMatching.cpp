@@ -322,6 +322,22 @@ int getHeadWidth() {
   headHeight = i;
 
   shouldersWidth = widths[ i ];
+  limit = widths[ i ];
+
+  int steps = 30;
+  for( i = i + steps; i + steps < widths.size(); i++ ) {
+    
+    int minis = widths[ i - steps ], maxis = widths[ i - steps ];
+    for( int j = i - steps; j < i; j++ ) {
+      if( widths[ j ] < minis ) minis = widths[ j ];
+      if( widths[ j ] > maxis ) maxis = widths[ j ];
+    }
+    if( maxis - minis < (int)( shouldersWidth * 0.03 ) ) {
+      shouldersWidth = maxis;
+      break;
+    }
+    shouldersWidth = maxis;
+  }
 
   return maxHeadWidth;
 }
