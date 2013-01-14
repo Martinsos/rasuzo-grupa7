@@ -3,6 +3,8 @@
 #   Format: folderName
 #           picture to be classified
 #
+#   Pictures mentioned here are used for testing, and the others are used for training.
+#
   
 sil2_hrvoje
 sil_PC200014.jpg
