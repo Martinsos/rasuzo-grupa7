@@ -6,7 +6,7 @@ RPTC=$(RELATIVE_PATH_TO_CLASSIFIER)
 RPTSE=$(RELATIVE_PATH_TO_SILHOUETTE_EXTRACTION)
 OPENCVLIBS=`pkg-config --libs opencv`
 AP=$(RELATIVE_PATH_TO_ADAPTERS)
-OBJFILES=HWMatching.o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o AbstractAdapter.o
+OBJFILES=Granlund.o HWMatching.o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o AbstractAdapter.o
 
 
 all: demo silhouetteExtraction
@@ -26,6 +26,10 @@ Classifier.o: $(RPTC)Classifier.cpp $(RPTC)Classifier.hpp
 
 
 # Classifiers
+GR=../Granlund/
+Granlund.o: $(GR)MinimumDistanceClassifier.cpp $(GR)MinimumDistanceClassifier.hpp
+		g++ -c $(GR)MinimumDistanceClassifier.cpp -o Granlund.o ${OPENCVLIBS}
+
 HW=../height_width_matching/
 HWMatching.o: $(HW)HWMatching.cpp $(HW)HWMatching.hpp
 		g++ -c $(HW)HWMatching.cpp -o HWMatching.o ${OPENCVLIBS}
