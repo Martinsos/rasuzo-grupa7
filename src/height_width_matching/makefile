@@ -17,8 +17,8 @@ AP=$(RELATIVE_PATH_TO_ADAPTERS)
 
 all: $(MAIN)
 
-$(MAIN): $(MAIN).cpp $(MC).o Classifier.o $(AP)BayesAdapter.o $(AP)AbstractAdapter.o $(AP)SVMAdapter.o
-		g++ $(MAIN).cpp $(MC).o Classifier.o $(AP)BayesAdapter.o $(AP)SVMAdapter.o $(AP)AbstractAdapter.o -o $(MAIN) ${OPENCVLIBS}
+$(MAIN): $(MAIN).cpp $(MC).o Classifier.o BayesAdapter.o AbstractAdapter.o SVMAdapter.o KNNAdapter.o
+		g++ $(MAIN).cpp $(MC).o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o AbstractAdapter.o -o $(MAIN) ${OPENCVLIBS}
 
 
 Classifier.o: $(RPTC)Classifier.cpp $(RPTC)Classifier.hpp
@@ -31,18 +31,20 @@ $(MC).o: $(MC).cpp $(MC).hpp
 $(MC).hpp: $(RPTC)Classifier.hpp
 
 BayesAdapter.o: $(AP)BayesAdapter.cpp $(AP)BayesAdapter.hpp
-		g++ -c $(AP)BayesAdapter.cpp ${OPENCVLIBS}
+		g++ -c $(AP)BayesAdapter.cpp -o BayesAdapter.o ${OPENCVLIBS}
 
 SVMAdapter.o: $(AP)SVMAdapter.cpp $(AP)SVMAdapter.hpp
-		g++ -c $(AP)SVMAdapter.cpp ${OPENCVLIBS}
+		g++ -c $(AP)SVMAdapter.cpp -o SVMAdapter.o ${OPENCVLIBS}
+
+KNNAdapter.o: $(AP)KNNAdapter.cpp $(AP)KNNAdapter.hpp
+		g++ -c $(AP)KNNAdapter.cpp -o KNNAdapter.o ${OPENCVLIBS}
 
 AbstractAdapter.o: $(AP)AbstractAdapter.cpp $(AP)AbstractAdapter.hpp
-		g++ -c $(AP)AbstractAdapter.cpp ${OPENCVLIBS}
+		g++ -c $(AP)AbstractAdapter.cpp -o AbstractAdapter.o ${OPENCVLIBS}
 
-BayesAdapter.hpp: $(AP)AbstractAdapter.hpp
+$(AP)BayesAdapter.hpp: $(AP)AbstractAdapter.hpp
 
-SVMAdapter.hpp: $(AP)AbstractAdapter.hpp
-
+$(AP)SVMAdapter.hpp: $(AP)AbstractAdapter.hpp
 
 clean:
 		rm *.o
