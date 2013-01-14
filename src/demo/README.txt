@@ -32,16 +32,19 @@ Kako biste preveli program i stvorili izvršnu datoteku, napravite sljedeće kor
 
         make
 
-    U tekućem direktoriju stvorit će se izvršna datoteka pod imenom "demo".
+    U tekućem direktoriju stvorit će se dvije izvršne datoteke: "demo" i "silhouetteExtraction".
 
 
-3.  Pokrenite stvorenu izvršnu datoteku s odgovarajućim parametrima. Ukoliko je pokušate pokrenuti bez
+3.  Pokrenite stvorenu izvršnu datoteku "demo" s odgovarajućim parametrima. Ukoliko je pokušate pokrenuti bez
     navođenja parametara, ispisat će se upute za korištenje.
 
     Nakon što je datoteka uspješno pokrenuta, u tekućem direktoriju stvorit će se odgovarajući izvještaj
     zapisan u HTML obliku.
     Izvještaj sadrži matricu zabune, mjere točno klasificiranih primjera i rezultat svake pojedine klasifikacije.
-
+    
+    Primjeri uporabe programa "demo":
+        ./demo granlund
+        ./demo bp-knn
 
 
 Organizacija baze slika
@@ -70,3 +73,27 @@ Primjerice:
 demo program je unaprijed podešen tako da koristi datoteku testConfDemo.txt.
 Po pokretanju programa stvaraju se skupovi za učenje i testiranje, provodi učenje odabranog klasifikatora 
 i stvara odgovarajući HTML izvještaj s rezultatima klasificiranja primjera iz skupa za testiranje.
+
+
+Silhouette extraction
+=====================
+
+Iako nije potreban za pokretanje programa "demo", uz "demo" se stvara i izvršna datoteka programa "silhouetteExtraction".
+"silhouetteExtraction" je program koji iz slike(.jpg) izdvaja siluetu objekta.
+Program prima dvije slike (slika pozadine, i slika iste te pozadine sa nekim objektom) te
+stvara novu crno bijelu sliku gdje je bijelom bojom označen objekt, a crnom pozadina.
+
+Izvršna datoteka "silhouetteExtraction" se može pokrenuti na dva načina:
+    - NORMALNI NAČIN: ako se postave sva tri argumenta, tada program stvara rezultat(crno-bijelu sliku) u pathu zadanom trećim argumentom.
+        ./silhouetteExtraction <put_do_slike_sa_objektom> <put_do_slike_pozadine> <put_datoteke_za_rezultat>
+        
+    - RUČNI NAČIN: ako se ne postavi treći argument, onda se program pokreće u modu za ručno podešavanje: otvaraju se prozori
+      gdje se vidi slika i rezultat te korisnik može podešavati parametre ekstrakcije siluete te uživo vidjet rezultat.
+      Nakon što korisnik zatvori oba prozora, krajnji se rezultat sprema u silhouette.jpg.
+        ./silhouetteExtraction <put_do_slike_sa_objektom> <put_do_slike_pozadine>
+    
+Primjeri uporabe:
+    ./silhouetteExtraction ../../slike/PC200026.jpg ../../slike/PC200025.jpg silueta.jpg
+    ./silhouetteExtraction ../../slike/PC200060.jpg ../../slike/PC200058.jpg silueta.jpg
+    
+    ./silhouetteExtraction ../../slike/PC200060.jpg ../../slike/PC200058.jpg

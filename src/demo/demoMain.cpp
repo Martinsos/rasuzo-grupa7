@@ -19,7 +19,7 @@ int main(int argc, char const *argv[])
         
         fprintf(stderr, "You can choose between multiple methods:\n"
                          "1. granlund: Granlund coefficients\n"
-                         "2. bp-knn  : Body proportions matching with knn\n"
+                         "2. bp-knn  : Body proportions(BP) matching with knn\n"
                          "3. bp-qe   : BP matching with quadratic error\n"
                          "4. bp-bayes: BP matching with bayes classificator\n"
                          "5. bp-swm  : BP matching with SVM classificator\n"
@@ -59,16 +59,20 @@ int main(int argc, char const *argv[])
             else if( method == "bp-rf" ) 
                    param = make_pair("random_forest", hr);
             else {
-                  cout << "Wrong method typed in" << endl;
+                  cerr << "ERROR: Wrong method typed in" << endl;
                   return 1;
             }
  
             string bpReportName = method + "Report.html";
 
             // Generate report
-            hwCl->test(testConfPath, 3, silPath, bpReportName, &param);
+	    if (method == "bp-qe")
+		hwCl->test(testConfPath, 3, silPath, bpReportName, &param);
+	    else
+		hwCl->test(testConfPath, 1, silPath, bpReportName, &param);
 
             cout << "Generated " << bpReportName << endl;
+	    return 0;
         }
     }
     
@@ -83,7 +87,9 @@ int main(int argc, char const *argv[])
         granCl->test(testConfPath, 3, silPath, "granlundReport.html");
 
         cout << "Generated granlundReport.html" << endl;
+	return 0;
     }
 
-    return 0;
+    cerr << "ERROR: Wrong method typed in" << endl;
+    return 1;
 }
