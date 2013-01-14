@@ -102,13 +102,13 @@ int main(int argc, char** argv) {
     Classifier* dis = new DistanceClassifier();
     Classifier* svm  = new SVMClassifier();
 
-    wrongs = bay ->test("testConfSample.txt", 3, "../../siluete/","sampleReportBayes.html");
+    wrongs = bay ->test("testConfSample.txt", 1, "../../siluete/","sampleReportBayes.html");
     cout << wrongs << endl;
 
     wrongs = dis ->test("testConfSample.txt", 3, "../../siluete/","sampleReportDistance.html");
     cout << wrongs << endl;
 
-    wrongs = svm ->test("testConfSample.txt", 3, "../../siluete/","sampleReportSVM.html");
+    wrongs = svm ->test("testConfSample.txt", 1, "../../siluete/","sampleReportSVM.html");
     cout << wrongs << endl;
 
     return 0;
