@@ -1,7 +1,7 @@
 #ifndef MINIMUM_DISTANCE_CLASSIFIER_HPP
 #define MINIMUM_DISTANCE_CLASSIFIER_HPP
 
-#include "Classifier.hpp"
+#include "../testing/Classifier.hpp"
 #include <set>
 #include <math.h>
 

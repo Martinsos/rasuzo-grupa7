@@ -19,7 +19,11 @@ int main(int argc, char const *argv[])
         
         fprintf(stderr, "You can choose between multiple methods:\n"
                          "1. granlund: Granlund coefficients\n"
-                         "2. hw      : Height-width matching\n"
+                         "2. hw-knn  : Height-width matching with knn\n"
+                         "3. hw-qe   : HW matching with quadratic error\n"
+                         "4. hw-bayes: HW matching with bayes classificator\n"
+                         "5. hw-swm  : HW matching with SVM classificator\n"
+                         "6. hw-rf   : HW matching with Random Forest\n"
                          "HTML report will be generated.\n");
 
         cout << endl;
@@ -32,18 +36,43 @@ int main(int argc, char const *argv[])
 
     // -------------------- HW matching --------------------- //
     
-    if (method == "hw")
-    {
-        // Instantiate classifier
-        Classifier* hwCl = new HWMatching();
+    if( method.size() >= 2 ) {
+        if (method.substr( 0, 2 ) == "hw")
+        {
+            // Instantiate classifier
+            Classifier* hwCl = new HWMatching();
+            
+            // divide features with silhoutte height
+            string heightRatio = "no";
+            fprintf(stderr, "Divide all features with silhouette height?\n"
+                            "type in: yes/no\n");
+            cin >> heightRatio;
+  
+            bool hr = (heightRatio == "yes");
 
-        // Set params
-        pair<string, bool> param = make_pair("", false);
+            // Set params
+            pair<string, bool> param;
 
-        // Generate report
-        hwCl->test(testConfPath, 3, silPath, "hwReport.html", &param);
+            if( method == "hw-qe" ) 
+                   param = make_pair("", hr);
+            else if( method == "hw-knn" ) 
+                   param = make_pair("knn", hr);
+            else if( method == "hw-bayes" )
+                   param = make_pair("bayes", hr);
+            else if( method == "hw-svm" ) 
+                   param = make_pair("svm", hr);
+            else if( method == "hw-rf" ) 
+                   param = make_pair("random_forest", hr);
+            else {
+                  cout << "Wrong method typed in" << endl;
+                  return 1;
+            }
 
-        cout << "Generated hwReport.html" << endl;
+            // Generate report
+            hwCl->test(testConfPath, 3, silPath, "hwReport.html", &param);
+
+            cout << "Generated hwReport.html" << endl;
+        }
     }
     
     // -------------------- Granlund coefficients --------------------- //
