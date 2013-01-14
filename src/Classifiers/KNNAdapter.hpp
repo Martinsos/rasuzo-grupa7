@@ -17,8 +17,14 @@ using namespace cv;
 class KNNAdapter : AbstractAdapter {
 private:
     CvKNearest knn;
+    int k;
 
 public:
+    /*
+     * @param k Number of nearest neighbours to find.
+     */
+    KNNAdapter(int k = 1);
+
     virtual void train (vector< vector<float> >& examples, vector<string>& labels);
 
     virtual string classify(vector<float>& example);

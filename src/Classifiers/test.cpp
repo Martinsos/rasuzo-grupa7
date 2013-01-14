@@ -37,7 +37,7 @@ int main() {
     svm->train(examples, labels);
     BayesAdapter* bayes = new BayesAdapter(); 
     bayes->train(examples, labels);
-    KNNAdapter* knn = new KNNAdapter(); 
+    KNNAdapter* knn = new KNNAdapter(2); 
     knn->train(examples, labels);
 
     vector<float> e(2);
