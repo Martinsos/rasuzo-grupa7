@@ -1,6 +1,11 @@
+#pragma once
+#ifndef GRANCOEF_HPP
+#define GRANCOEF_HPP
+
 #include<opencv2/core/core.hpp>
 #include<opencv2/opencv.hpp>
 #include<opencv2/highgui/highgui.hpp>
+#include<opencv2/ml/ml.hpp>
 #include<vector>
 #include<iostream>
 
@@ -15,7 +20,7 @@ using namespace cv;
  *
  * @returns         Computed error between vectors
  */
-float errorFunction(vector <complex <float> > first, vector <complex <float> > second);
+double errorFunction(vector <complex <double> > first, vector <complex <double> > second);
 
 /* Function that assists in sorting structure
  *
@@ -41,7 +46,7 @@ vector <Point> preparePicture(Mat img);
  *
  * @returns         Returns vector of grandlund computed granlund coefficients
  */
-vector <complex <float> > granlundCoefficients(vector <Point> contour);
+vector <complex <double> > granlundCoefficients(vector <Point> contour);
 
-// Granlund coefficients
-vector <pair <string, vector <complex <float> > > > gran_cof;
+
+#endif // GRANCOEF_HPP

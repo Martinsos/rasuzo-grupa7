@@ -5,14 +5,16 @@
 #include<map>
 
 #include "granlundCoefficients.hpp"
+#include "granlundClassifiers.hpp"
 #include "../testing/Classifier.hpp"
+#include "../Classifiers/BayesAdapter.hpp"
 
 using namespace std;
 using namespace cv;
 
 
-float errorFunction(vector <complex <float> > first, vector <complex <float> > second) {
-    complex <float> sum = 0;
+double errorFunction(vector <complex <double> > first, vector <complex <double> > second) {
+    complex <double> sum = 0;
 
     for (int i = 0; i < first.size(); i++) {
         sum += pow(first[i] - second[i], 2);
@@ -34,60 +36,8 @@ vector <Point> preparePicture(Mat img) {
     return contours[0];
 }
 
-class MyClassifier: public Classifier
-{
-    public:
-
-        virtual vector< pair<string, double> > classify(Mat img, int resNum) {
-            vector <complex <float> > gran_cof_img;
-            vector <Point> contour;
-            vector <pair <string,double> > error;
-            double err;
-            int index;
-            int first_n = 3;
-            vector< pair<string, double> > ret;
-
-            contour = preparePicture(img);
-            gran_cof_img = granlundCoefficients(contour);
-
-            // Find all errors
-            for (int i = 0; i < gran_cof.size(); i++) {
-                err = errorFunction(gran_cof_img,gran_cof[i].second);
-                error.push_back(make_pair(gran_cof[i].first,err));
-            }
-
-            // Sort vector of errors
-            sort (error.begin(), error.end(), sortFunction);
-
-            // Return first n errors
-            for (int i = 0; i < first_n; i++) {
-                ret.push_back(make_pair(error[i].first, error[i].second));
-            }
-
-            return ret;
-        }
-
-        virtual void learn(map< string, vector<Mat> >& learningData, void* param) {
-            Mat image;
-            vector <Point> contour;
-            vector <complex <float> > gran_cof_img;
-            map <string, vector<Mat> >::iterator data;
-
-            for (data = learningData.begin(); data != learningData.end(); data++) {
-                for (int i = 0; i < (data->second).size(); i++) {
-
-                    image = (data->second)[i];
-                    contour = preparePicture(image);
-                    gran_cof_img = granlundCoefficients(contour);
-
-                    gran_cof.push_back(make_pair(data->first,gran_cof_img));
-                }
-            }
-        }
-};
-
-vector <complex <float> > granlundCoefficients(vector <Point> contour) {
-    float cent_x = 0, cent_y = 0;
+vector <complex <double> > granlundCoefficients(vector <Point> contour) {
+    double cent_x = 0, cent_y = 0;
     int contour_size = contour.size();
 
     // Fourier coefficients index
@@ -95,11 +45,11 @@ vector <complex <float> > granlundCoefficients(vector <Point> contour) {
     int cof_size = sizeof(cof) / sizeof(int);
 
     // Fourier coefficients
-    map <int, complex <float> > a;
+    map <int, complex <double> > a;
 
     // Granlund coefficients
-    vector <complex <float> > gran_cof;
-    complex <float> temp;
+    vector <complex <double> > gran_cof_internal;
+    complex <double> temp;
 
 
     // Find contour center
@@ -129,31 +79,38 @@ vector <complex <float> > granlundCoefficients(vector <Point> contour) {
                     contour[n].x * sin( 2 * M_PI * cof[k] * n / contour_size);
 
         }
-        a[cof[k]] = complex <float> (sum_r,sum_i);
+        a[cof[k]] = complex <double> (sum_r,sum_i);
     }
 
-    // Granlund coefficients
-    gran_cof.push_back((pow(a[2],2) * pow(a[-1],1)) / pow(a[1],3)); // m=1, n=2
-    gran_cof.push_back((pow(a[3],2) * pow(a[-1],2)) / pow(a[1],4)); // m=2, n=2
-    gran_cof.push_back((pow(a[3],3) * pow(a[-2],2)) / pow(a[1],5)); // m=2, n=3
-    gran_cof.push_back((pow(a[3],4) * pow(a[-3],2)) / pow(a[1],6)); // m=2, n=4
-    gran_cof.push_back((pow(a[3],5) * pow(a[-4],2)) / pow(a[1],6)); // m=2, n=5
-    gran_cof.push_back((pow(a[4],3) * pow(a[-2],3)) / pow(a[1],6)); // m=3, n=3
-    gran_cof.push_back((pow(a[5],3) * pow(a[-2],4)) / pow(a[1],7)); // m=4, n=3
-    gran_cof.push_back((pow(a[5],4) * pow(a[-3],4)) / pow(a[1],8)); // m=4, n=4
+    // Granlund coefficients - uncomment to apply
+    gran_cof_internal.push_back((pow(a[2],2) * pow(a[-1],1)) / pow(a[1],3)); // m=1, n=2
+//    gran_cof_internal.push_back((pow(a[3],2) * pow(a[-1],2)) / pow(a[1],4)); // m=2, n=2
+//    gran_cof_internal.push_back((pow(a[3],3) * pow(a[-2],2)) / pow(a[1],5)); // m=2, n=3
+//    gran_cof_internal.push_back((pow(a[3],4) * pow(a[-3],2)) / pow(a[1],6)); // m=2, n=4
+//    gran_cof_internal.push_back((pow(a[3],5) * pow(a[-4],2)) / pow(a[1],6)); // m=2, n=5
+//    gran_cof_internal.push_back((pow(a[4],3) * pow(a[-2],3)) / pow(a[1],6)); // m=3, n=3
+//    gran_cof_internal.push_back((pow(a[5],3) * pow(a[-2],4)) / pow(a[1],7)); // m=4, n=3
+//    gran_cof_internal.push_back((pow(a[5],4) * pow(a[-3],4)) / pow(a[1],8)); // m=4, n=4
 
-    return gran_cof;
+    return gran_cof_internal;
 }
 
 int main(int argc, char** argv) {
-    Mat image, imgray, thresh;
-    vector <vector <Point> > contours;
-    vector <complex <float> > gran_cof_img;
+    int wrongs;
 
-    Classifier* myCl = new MyClassifier();
+    Classifier* bay = new BayesClassifier();
+    Classifier* dis = new DistanceClassifier();
+    Classifier* svm  = new SVMClassifier();
 
-    int wrongs = myCl->test("testConfSample.txt", 3, "../../siluete/","sampleReport.html");
+    wrongs = bay ->test("testConfSample.txt", 3, "../../siluete/","sampleReportBayes.html");
     cout << wrongs << endl;
+
+    wrongs = dis ->test("testConfSample.txt", 3, "../../siluete/","sampleReportDistance.html");
+    cout << wrongs << endl;
+
+    wrongs = svm ->test("testConfSample.txt", 3, "../../siluete/","sampleReportSVM.html");
+    cout << wrongs << endl;
+
     return 0;
 }
 
