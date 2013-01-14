@@ -10,6 +10,7 @@
 #include "HWMatching.hpp"
 #include "../Classifiers/BayesAdapter.hpp"
 #include "../Classifiers/SVMAdapter.hpp"
+#include "../Classifiers/KNNAdapter.hpp"
 
 using namespace std;
 using namespace cv;
@@ -48,6 +49,7 @@ vector <Example> learningSet;
 string classifyMethod;
 BayesAdapter *adapter;
 SVMAdapter *svmAdapter;
+KNNAdapter *knnAdapter;
 
 vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
 
@@ -71,8 +73,10 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
   } else if( classifyMethod == "svm" ) {
     ret.push_back( make_pair( svmAdapter->classify( adapterExamples ), 1 ) );
     return ret;
+  } else if( classifyMethod == "knn" ) {
+    ret.push_back( make_pair( knnAdapter->classify( adapterExamples ), 1 ) );
+    return ret;
   }
-
   testExample.features[ K_HEAD_HEIGHT ] = getHeadHeight();
   testExample.features[ K_HEAD_WIDTH ] = getHeadWidth();
   testExample.features[ K_MAX_HEIGHT ] = getMaxHeight();
@@ -115,6 +119,8 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
     adapter = new BayesAdapter;
   } else if( method == "svm" ) {
     svmAdapter = new SVMAdapter;
+  } else if( method == "knn" ) {
+    knnAdapter = new KNNAdapter;
   } 
 
   vector < vector<float> > adapterExamples;
@@ -159,6 +165,8 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
     adapter->train( adapterExamples, adapterLabels );
   } else if( method == "svm" ) {
     svmAdapter->train( adapterExamples, adapterLabels );
+  } else if( method == "knn" ) {
+    knnAdapter->train( adapterExamples, adapterLabels );
   }
 
 }
