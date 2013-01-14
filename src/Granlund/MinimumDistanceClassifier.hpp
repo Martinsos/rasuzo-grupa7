@@ -1,7 +1,7 @@
 #ifndef MINIMUM_DISTANCE_CLASSIFIER_HPP
 #define MINIMUM_DISTANCE_CLASSIFIER_HPP
 
-#include "Classifier.hpp"
+#include "../testing/Classifier.hpp"
 #include <set>
 #include <math.h>
 
@@ -32,7 +32,7 @@ private:
 	/**
 	 * Granlund coefficients of images in training set
 	 */
-	map< string, vector< vector<double>> > GranlundCoefficients;
+	map< string, vector< vector<double> > > GranlundCoefficients;
 
 	/** Finds contours from binary silhuette image
 	 *
@@ -56,7 +56,7 @@ private:
 	 * @param	averages	Average distance for every pair (training image, test image)
 	 * @param	coeffs		Test image Granlund coefficients
 	 */
-	void calculateDistance(set< pair<double, string>>& averages, vector<double> coeffs);
+	void calculateDistance(set< pair<double, string> >& averages, vector<double> coeffs);
 
 	/** Removes silx_ from image name
 	 *
