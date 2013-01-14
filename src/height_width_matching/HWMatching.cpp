@@ -11,6 +11,7 @@
 #include "../Classifiers/BayesAdapter.hpp"
 #include "../Classifiers/SVMAdapter.hpp"
 #include "../Classifiers/KNNAdapter.hpp"
+#include "../Classifiers/RandomForestAdapter.hpp"
 
 using namespace std;
 using namespace cv;
@@ -53,6 +54,7 @@ string classifyMethod;
 BayesAdapter *adapter;
 SVMAdapter *svmAdapter;
 KNNAdapter *knnAdapter;
+RandomForestAdapter *rfAdapter;
 
 vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
 
@@ -82,7 +84,11 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
   } else if( classifyMethod == "knn" ) {
     ret.push_back( make_pair( knnAdapter->classify( adapterExamples ), 1 ) );
     return ret;
+  }else if( classifyMethod == "random_forest" ) {
+    ret.push_back( make_pair( rfAdapter->classify( adapterExamples ), 1 ) );
+    return ret;
   }
+
   testExample.features[ K_HEAD_HEIGHT ] = getHeadHeight() / hh;
   testExample.features[ K_HEAD_WIDTH ] = getHeadWidth() / hh;
   testExample.features[ K_MAX_HEIGHT ] = getMaxHeight() / hh;
@@ -132,7 +138,10 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
     svmAdapter = new SVMAdapter;
   } else if( classifyMethod == "knn" ) {
     knnAdapter = new KNNAdapter;
-  } 
+  } else if( classifyMethod == "random_forest" ) {
+    rfAdapter = new RandomForestAdapter;
+  }
+
 
   vector < vector<float> > adapterExamples;
   vector < string > adapterLabels;
@@ -183,8 +192,9 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
     svmAdapter->train( adapterExamples, adapterLabels );
   } else if( classifyMethod == "knn" ) {
     knnAdapter->train( adapterExamples, adapterLabels );
+  } else if( classifyMethod == "random_forest" ) {
+    rfAdapter->train( adapterExamples, adapterLabels );
   }
-
 }
 
 /*int main(int argc, char **argv) {

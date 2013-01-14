@@ -17,8 +17,8 @@ AP=$(RELATIVE_PATH_TO_ADAPTERS)
 
 all: $(MAIN)
 
-$(MAIN): $(MAIN).cpp $(MC).o Classifier.o BayesAdapter.o AbstractAdapter.o SVMAdapter.o KNNAdapter.o
-		g++ $(MAIN).cpp $(MC).o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o AbstractAdapter.o -o $(MAIN) ${OPENCVLIBS}
+$(MAIN): $(MAIN).cpp $(MC).o Classifier.o BayesAdapter.o AbstractAdapter.o SVMAdapter.o KNNAdapter.o RandomForestAdapter.o
+		g++ $(MAIN).cpp $(MC).o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o RandomForestAdapter.o AbstractAdapter.o -o $(MAIN) ${OPENCVLIBS}
 
 
 Classifier.o: $(RPTC)Classifier.cpp $(RPTC)Classifier.hpp
@@ -38,6 +38,9 @@ SVMAdapter.o: $(AP)SVMAdapter.cpp $(AP)SVMAdapter.hpp
 
 KNNAdapter.o: $(AP)KNNAdapter.cpp $(AP)KNNAdapter.hpp
 		g++ -c $(AP)KNNAdapter.cpp -o KNNAdapter.o ${OPENCVLIBS}
+
+RandomForestAdapter.o: $(AP)RandomForestAdapter.cpp $(AP)RandomForestAdapter.hpp
+		g++ -c $(AP)RandomForestAdapter.cpp -o RandomForestAdapter.o ${OPENCVLIBS}
 
 AbstractAdapter.o: $(AP)AbstractAdapter.cpp $(AP)AbstractAdapter.hpp
 		g++ -c $(AP)AbstractAdapter.cpp -o AbstractAdapter.o ${OPENCVLIBS}
