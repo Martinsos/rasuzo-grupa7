@@ -27,19 +27,9 @@ int templateMatching_metoda(vector<Mat> slike, Mat temp);
 
 vector<Mat> podesavanje_po_centroidu(vector<Mat> slike);
 
-Mat roi_retci(Mat src,int* prvi_redak,int* zadnji_redak);
-
-Mat roi_stupci(Mat src,int* prvi_stupac,int* zadnji_stupac);
-
-void prilagodba(Mat* image_adj, Mat* temp_adj,Mat image, Mat temp,int prvi_img,int zadnji_img,int prvi_tmp,int zadnji_tmp,int vrsta);
-
 double podudaranje(Mat image, Mat temp);
 
 vector<Mat> ucitavanje(String slika_put,int broj_slika);
-
-Mat prilagodba_slike(Mat slika, int max_redak, int max_stupac);
-
-int euklidska_udaljenost(Mat feature, Mat features_temp);
 
 Mat srednja_slika(vector<Mat> slike);
 
@@ -53,7 +43,7 @@ int main(int argc, char** argv)
 
 	Mat image_roi_r, temp_roi_r,image_roi, temp_roi;
 
-	vector<Mat> slike, slike_roi;
+	vector<Mat> slike, slike_roi, slike_t;
 
 	int najslicnija_slika=0; //broj naslicnije slike
 	double max=0;
@@ -61,64 +51,46 @@ int main(int argc, char** argv)
 	vector<vector<float>> vrijednosti_pca;
 	vector<double> vrijednosti;
 
-	int broj_slika;//broj slika koji se ucitava
+	int broj_slika, broj_slika_usporedbe;//broj slika koji se ucitava
 	int slika_usporedbe; //slika koje ce se usporedivati template
 	int num_components;
 	//putanja za sve ostale slike
 	String images_path="D:\\FER\\Raspoznavanje uzoraka\\Projekt\\slike\\siluete\\slika";
+	String template_path="D:\\FER\\Raspoznavanje uzoraka\\Projekt\\slike\\siluete\\slika_t";
 
 	//ucitavanje slika u vector
 	cout<<"upisi broj slika"<<endl;
 	cin>>broj_slika;	
 	slike=ucitavanje(images_path,broj_slika);
 
-	cout<<"upisi broj slike koja ce se usporedivati"<<endl;
-	cin>>slika_usporedbe;
+	//ucitavanje testnih slika u vector
+	cout<<"upisi broj testnih slika"<<endl;
+	cin>>broj_slika_usporedbe;	
+	slike_t=ucitavanje(template_path,broj_slika_usporedbe);
 
 	cout<<"upisi broj vektora koji se koristi za PCA"<<endl;
 	cin>>num_components;
 
-	temp=slike.at(slika_usporedbe-1);
+	for (int o=0; o<slike_t.size(); o++){
+	temp=slike_t.at(o);
+	najslicnija_slika=0;
 
-	slike.erase(slike.begin()+(slika_usporedbe-1));
+	//najslicnija_slika=templateMatching_metoda(slike,temp);
 
-	najslicnija_slika=templateMatching_metoda(slike,temp);
-
-	bool zastavica_za_PCA_svi_pikseli=false;
+	bool zastavica_za_PCA_svi_pikseli=true;		// ako je TRUE oznaèava da pretvaramo sve piksele slike u redak, 
+												// ako je FALSE onda radimo zbroj bijelih piksela po redku slike i stavljamo u jednu matricu
 	
-	//najslicnija_slika=PCA_metoda(slike,temp,num_components,zastavica_za_PCA_svi_pikseli);
+	najslicnija_slika=PCA_metoda(slike,temp,num_components,zastavica_za_PCA_svi_pikseli);
 
 	
-	namedWindow("Template",CV_WINDOW_AUTOSIZE);
+	/*namedWindow("Template",CV_WINDOW_AUTOSIZE);
 	imshow("Template",temp);
 	namedWindow("Najslicnija slika",CV_WINDOW_AUTOSIZE);
-	imshow("Najslicnija slika",slike[(najslicnija_slika-1)]);
+	imshow("Najslicnija slika",slike[(najslicnija_slika-1)]);*/
 	cout<<najslicnija_slika<<endl;
+	}
 	waitKey(0);
 	return(0);
-}
-
-Mat prilagodba_slike(Mat slika, int max_redak, int max_stupac){
-	Mat prilagodna=Mat::zeros(max_redak+1,max_stupac+1,CV_8UC1);
-	int pocetak_retci=(int)floor((float) (max_redak-slika.rows)/2);
-	int pocetak_stupci=(int)floor((float) (max_stupac-slika.cols)/2);
-	int kraj_retci=max_redak-pocetak_retci;
-	int kraj_stupci=max_stupac-pocetak_stupci;
-	bool zastavica=false;
-	int n=-1,m=0;
-	for(int i=0;i<max_redak+1;++i){
-		if(i>=pocetak_retci && i<kraj_retci)
-			n++;
-		for(int j=0;j<max_stupac+1;++j){
-			if(i>=pocetak_retci && i<kraj_retci)
-				if(j>=pocetak_stupci && j<kraj_stupci){
-					prilagodna.at<uchar>(i,j)=slika.at<uchar>(n,m);
-					m++;
-				}
-				else m=0;
-		}
-	}
-	return prilagodna;
 }
 
 //ucitavanje svih silueta koje zelimo koristiti za usporedivanje
@@ -143,113 +115,6 @@ vector<Mat> ucitavanje(String slike_put,int broj_slika){
 	return vector_slike;
 }
 //funkcija koja izdvaja ROI po retcima
-Mat roi_retci(Mat src,int* prvi_redak, int* zadnji_redak)
-{
-	Mat mat_roi;
-	*prvi_redak=0;
-	*zadnji_redak=0;
-	bool zastavica=true;
-	float suma=0;
-
-	for(int i=0;i<src.rows;++i)
-		if(zastavica){
-				if(*prvi_redak==0){
-					for(int j=1;j<src.cols;++j)
-						if(src.at<uchar>(i,j)!=0)
-							*prvi_redak=i;
-				}
-				else if(*zadnji_redak==0)
-				{
-					suma=0;
-					for(int j=1;j<src.cols;++j)
-						suma=suma+src.at<uchar>(i,j);
-					if(suma==0)
-					{	
-						*zadnji_redak=i;
-						zastavica=false;
-					}
-				}
-				else 
-					break;
-		}
-		else 
-			break;
-	mat_roi = src(Range(*prvi_redak,*zadnji_redak),Range::all());
-	return mat_roi;
-}
-//funkcija koja izdvaja ROI po stupcima
-Mat roi_stupci(Mat src,int* prvi_stupac, int* zadnji_stupac)
-{
-	Mat mat_roi;
-	*prvi_stupac=0;
-	*zadnji_stupac=0;
-	bool zastavica=true;
-	float suma=0;
-
-	for(int i=0;i<src.cols;++i)
-		if(zastavica){
-				if(*prvi_stupac==0){
-					for(int j=1;j<src.rows;++j)
-						if(src.at<uchar>(j,i)!=0)
-							*prvi_stupac=i;
-				}
-				else if(*zadnji_stupac==0)
-				{
-					suma=0;
-					for(int j=1;j<src.rows;++j)
-						suma=suma+src.at<uchar>(j,i);
-					if(suma==0)
-					{	
-						*zadnji_stupac=i;
-						zastavica=false;
-					}
-				}
-				else 
-					break;
-		}
-		else 
-			break;
-	mat_roi = src(Range::all(),Range(*prvi_stupac,*zadnji_stupac));
-	return mat_roi;
-}
-
-//prilagodba velicine, ako je vrsta=1 onda se prilagodava po retcima, a ako je 2 onda po stupcima
-void prilagodba(Mat* image_adj,Mat* temp_adj, Mat image, Mat temp,int prvi_img,int zadnji_img,int prvi_tmp,int zadnji_tmp,int vrsta){
-	int razlika=abs((zadnji_img-prvi_img)-(zadnji_tmp-prvi_tmp));
-	int dodatak=(int)floor((float) razlika/2); //vratiti natrag an ceil ako nece raditi
-	if(vrsta==1){
-		if((zadnji_img-prvi_img)>(zadnji_tmp-prvi_tmp))
-		{
-			if((prvi_tmp-dodatak)<0)
-				*temp_adj=temp(Range(prvi_img,zadnji_img),Range::all());
-			else
-				*temp_adj=temp(Range(prvi_tmp-dodatak,zadnji_tmp+dodatak),Range::all());
-		}
-		else if((zadnji_img-prvi_img)<(zadnji_tmp-prvi_tmp))
-		{
-			if((prvi_img-dodatak)<0)
-				*image_adj=image(Range(prvi_tmp,zadnji_tmp),Range::all());
-			else
-				*image_adj=image(Range(prvi_img-dodatak,zadnji_img+dodatak),Range::all());
-		}
-	}
-	else{
-		if((zadnji_img-prvi_img)>(zadnji_tmp-prvi_tmp))
-		{
-			if((prvi_tmp-dodatak)<0)
-				*temp_adj=temp(Range::all(),Range(prvi_img,zadnji_img));
-			else
-				*temp_adj=temp(Range::all(),Range(prvi_tmp-dodatak,zadnji_tmp+dodatak));
-		}
-		else if((zadnji_img-prvi_img)<(zadnji_tmp-prvi_tmp))
-		{
-			if((prvi_img-dodatak)<0)	
-				*image_adj=image(Range::all(),Range(prvi_tmp,zadnji_tmp));
-			else
-				*image_adj=image(Range::all(),Range(prvi_img-dodatak,zadnji_img+dodatak));
-		}
-	}
-}
 
 //funkcija koja gleda u koliko se tocaka podudaraju dvije siluete
 double podudaranje(Mat image, Mat temp){
@@ -339,11 +204,10 @@ CvPoint nadi_centroid(Mat slika){
 
 int PCA_metoda(vector<Mat> slike, Mat temp, int num_components, bool zastavica_za_PCA_svi_pikseli){
 	int max_redak=0, max_stupac=0;
-	int najslicnija_slika;
+	int najslicnija_slika=0;
 	slike.push_back(temp);
 	vector<Mat> prilagodene_slike=podesavanje_po_centroidu(slike);
 	
-	imshow("Prilagodena slika",prilagodene_slike[0]);
 	//prolanazak srednje slike
 	Mat srednja=Mat::zeros(prilagodene_slike[0].rows,prilagodene_slike[0].cols,CV_8UC1);
 	bool zastavica=true;
@@ -360,21 +224,18 @@ int PCA_metoda(vector<Mat> slike, Mat temp, int num_components, bool zastavica_z
 			zastavica=true;
 		}
 	}
-	imshow("srednja", srednja);
+	
 	vector<Mat> centrirane_slike;
 
 	for(int i=0;i<prilagodene_slike.size();++i){
 		centrirane_slike.push_back(prilagodene_slike[i]-srednja);
 	}
 
-
 	temp=centrirane_slike[centrirane_slike.size()-1]; //novi template
 	
-
 	centrirane_slike.erase(centrirane_slike.begin()+(centrirane_slike.size()-1)); //micemo template iz skupa slika
 
-												// ako je TRUE oznaèava da pretvaramo sve piksele slike u redak, 
-												// ako je FALSE onda radimo zbroj bijelih piksela po redku slike i stavljamo u jednu matricu
+												
 	Mat redak;
 	if (zastavica_za_PCA_svi_pikseli==true){		//na PCA šaljemo sve piksele matrice
 	  //prebaciti sve slike u redak
