@@ -8,29 +8,20 @@
 #include <string>
 #include <map>
 
+#include "AbstractAdapter.hpp"
+
 using namespace std;
 using namespace cv;
 
 
-class SVMAdapter {
-  private:
+class SVMAdapter : AbstractAdapter {
+private:
     CvSVM svm;
-    vector<string> uniqueLabels;
 
-  public:
-    /*
-     * Trains SVM.
-     * @param examples Vector containing examples, each example is vector of floats.
-     * @param labels Vector containing labels, label at position i corresponds to example i.
-     */
-   SVMAdapter(vector< vector<float> >& examples, vector<string>& labels);
+public:
+    virtual void train (vector< vector<float> >& examples, vector<string>& labels);
 
-    /*
-     * Classifies given example.
-     * @param example
-     * @return Predicted label(class).
-     */
-    string classify(vector<float>& example);
+    virtual string classify(vector<float>& example);
 };
 
 #endif // SVMADAPTER_HPP

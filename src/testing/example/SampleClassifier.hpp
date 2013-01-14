@@ -14,7 +14,7 @@ class SampleClassifier : public Classifier
         virtual vector< pair<string, double> > classify(Mat img, int resNum);
 
         // Virtualna metoda - obavezno implementirati
-        virtual void learn(map< string, vector<Mat> >& learningData);
+        virtual void learn(map< string, vector<Mat> >& learningData, void* param);
 
         
         // Ovdje ce dalje sad ici metode i podaci specificni za vas klasifikator

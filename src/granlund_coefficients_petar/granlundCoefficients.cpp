@@ -67,7 +67,7 @@ class MyClassifier: public Classifier
             return ret;
         }
 
-        virtual void learn(map< string, vector<Mat> >& learningData) {
+        virtual void learn(map< string, vector<Mat> >& learningData, void* param) {
             Mat image;
             vector <Point> contour;
             vector <complex <float> > gran_cof_img;

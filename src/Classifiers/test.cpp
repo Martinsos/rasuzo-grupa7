@@ -32,8 +32,10 @@ int main() {
     example[0] = 0; example[1] = 4;
     examples.push_back(example); labels.push_back("*");    
 
-    SVMAdapter svm(examples, labels);
-    BayesAdapter bayes(examples, labels);
+    SVMAdapter svm;
+    svm.train(examples, labels);
+    BayesAdapter bayes; 
+    bayes.train(examples, labels);
 
     vector<float> e(2);
     e[0] = 4; e[1] = 0;
