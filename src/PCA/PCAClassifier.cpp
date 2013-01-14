@@ -66,8 +66,10 @@ vector< pair<string, double> > PCAClassifier::classify(Mat img, int resNum)
 void PCAClassifier::learn(map< string, vector<Mat> >& learningData, void* param)
 {
 	//ucitavanje slika u vector
-	for( MapType::iterator it = learningData.begin(); it != learningData.end(); ++it ) {
-    	slike.push_back( it->second );
+	for( map< string, vector<Mat> >::iterator it = learningData.begin(); it != learningData.end(); ++it ) {
+
+	for( int i = 0; i < (it->second).size(); i++ ) 
+    	slike.push_back( (it->second)[ i ] );
 		imena.push_back( it->first );
     }
 }
