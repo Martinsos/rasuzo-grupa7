@@ -32,7 +32,7 @@ Ukoliko se vaš sustav razlikuje, moguće je da ćete morati sami stvoriti svoje
 
 Kako biste preveli program i stvorili izvršne datoteke, napravite sljedeće korake:
 
-1.  Pozicionirajte se direktorij demo/ :
+1.  Pozicionirajte se u direktorij demo/ :
 
         cd src/demo/
 
