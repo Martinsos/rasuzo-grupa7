@@ -22,6 +22,7 @@ int getHeadWidth();
 int getHeadHeight();
 int getMaxHeight();
 int getMaxWidth();
+int getShouldersWidth();
 
 double sqr( double x ) {
   return x*x;
@@ -31,7 +32,7 @@ Mat a;
 vector <int> heights;
 vector <int> widths;
 int maxWidth, maxHeight; //though it can be extracted from heights&widths
-int headHeight;
+int headHeight, shouldersWidth;
 
 struct Example {
   // featureName -> featureValue
@@ -44,6 +45,7 @@ struct Example {
 #define K_HEAD_WIDTH "k_head_width"
 #define K_MAX_HEIGHT "k_max_height"
 #define K_MAX_WIDTH "k_max_width"
+#define K_SHOULDERS_WIDTH "k_shoulders_width"
 
 vector <Example> learningSet;
 string classifyMethod;
@@ -65,7 +67,7 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
   adapterExamples.push_back( getHeadWidth() );
   adapterExamples.push_back( getMaxHeight() );
   adapterExamples.push_back( getMaxWidth() );
-
+  adapterExamples.push_back( getShouldersWidth() );
 
   if( classifyMethod == "bayes" ) {
     ret.push_back( make_pair( adapter->classify( adapterExamples ), 1 ) );
@@ -81,6 +83,7 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
   testExample.features[ K_HEAD_WIDTH ] = getHeadWidth();
   testExample.features[ K_MAX_HEIGHT ] = getMaxHeight();
   testExample.features[ K_MAX_WIDTH ] = getMaxWidth();
+  testExample.features[ K_SHOULDERS_WIDTH ] = getShouldersWidth();
     
   vector < pair<double, string> > error;
   for( int i = 0; i < learningSet.size(); i++ ) {
@@ -95,7 +98,10 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
                      learningSet[ i ].features[ K_HEAD_HEIGHT ] );
     errorSum += sqr( testExample.features[ K_HEAD_WIDTH ] - 
                      learningSet[ i ].features[ K_HEAD_WIDTH ] );
-    
+
+    errorSum += sqr( testExample.features[ K_SHOULDERS_WIDTH ] -
+                     learningSet[ i ].features[ K_SHOULDERS_WIDTH ] );
+
     error.push_back( make_pair( errorSum, learningSet[ i ].name ) );
   }
 
@@ -145,6 +151,7 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
       current.features[ K_HEAD_WIDTH ] = getHeadWidth();
       current.features[ K_MAX_HEIGHT ] = getMaxHeight();
       current.features[ K_MAX_WIDTH ] = getMaxWidth(); 
+      current.features[ K_SHOULDERS_WIDTH ] = getShouldersWidth();
 
       if( method != "" ) {
         vector<float> v;
@@ -152,6 +159,7 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
         v.push_back( getHeadWidth() );
         v.push_back( getMaxHeight() );
         v.push_back( getMaxWidth() );
+        v.push_back( getShouldersWidth() );
         adapterExamples.push_back( v );
         adapterLabels.push_back( realClassId );
       }
@@ -313,7 +321,13 @@ int getHeadWidth() {
 
   headHeight = i;
 
+  shouldersWidth = widths[ i ];
+
   return maxHeadWidth;
+}
+
+int getShouldersWidth() {
+  return shouldersWidth;
 }
 
 int getHeadHeight() {

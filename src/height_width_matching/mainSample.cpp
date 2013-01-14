@@ -5,7 +5,7 @@ int main(int argc, char const *argv[] )
     // Create instance of Classifier
     Classifier* sampleCl = new HWMatching();
 
-    string method = "knn";
+    string method = "";
 
     // Count wrong classifications
     int wrongs = sampleCl->test("testConfFull.txt", 1, "../../siluete/", "sampleReport.html", &method);
