@@ -336,14 +336,20 @@ string Classifier::confusionMatrixToHTML(ConfusionMatrix& confusionMat)
                 string realName = classIDs[realIdx];
                 
                 // Convert int to string
-                string val = intToStr(confusionMat[predName][realName]);
+                int numVal = confusionMat[predName][realName];
+                string val = intToStr(numVal);
 
                 // Print value
                 string tdColor = "white";
-                if (predIdx == realIdx)     // Mark diagonal elements 
+                if (predIdx == realIdx)                 // Mark diagonal elements 
                 {
                     tdColor = "#85FF5C";                    // Bold         
                     val = "<strong>" + val + "</strong>";   // Color
+                }
+                
+                if (predIdx != realIdx && numVal != 0)  // Mark wrongs != 0 in red
+                {
+                    tdColor = "#FFCCCC";
                 }
 
                 HTMLrep += "\t<td align=\"center\" style=\"background-color:"+tdColor+"\"" + ">" + val + "</td>\n";
