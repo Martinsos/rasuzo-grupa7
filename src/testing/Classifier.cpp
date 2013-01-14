@@ -379,13 +379,18 @@ string Classifier::classifResultsToHTML(ClassifResults& clRes, int resNum)
     // Print table row for each result
     for (int resIdx = 0; resIdx < clRes.size(); resIdx++)
     {
+        // Extract data
+        string className = clRes[resIdx].first;
+        vector< pair<string, double> > results = clRes[resIdx].second;
+
         HTMLrep += "<tr>\n";
 
+            // Color correct ones in green
+            string thColor = "white";
+            if (inPredClasses(className, results)) thColor = "#85FF5C";
+
             // Print idx of image
-            HTMLrep += "\t<th>" + intToStr(resIdx + 1) + "</th>\n";
-            
-            string className = clRes[resIdx].first;
-            vector< pair<string, double> > results = clRes[resIdx].second;
+            HTMLrep += "\t<th style=\"background-color:"+thColor+"\"" + ">" + intToStr(resIdx + 1) + "</th>\n";
 
             // Print class of image
             HTMLrep += "\t<td>" + className + "</td>\n";
