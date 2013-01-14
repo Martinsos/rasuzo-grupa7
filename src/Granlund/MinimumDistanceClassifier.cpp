@@ -1,19 +1,31 @@
-#include "StdAfx.h"
+#ifdef WIN32
+    #include "StdAfx.h"
+#endif
+
 #include "MinimumDistanceClassifier.hpp"
-#include<complex>
-#include<math.h>
+#include <complex>
+#include <sstream>
+#include <math.h>
 
 #define PI 3.14159265
 
 int coeffIndexes[] = {1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 2, 2, 3, 2}; // Granlund coefficient parameters
 
+string longToStr(long long a)
+{
+    stringstream ss;
+    ss << a;
+
+    return ss.str();
+}
+
 vector< pair<string, double> > MinimumDistanceClassifier::classify(Mat img, int resNum) 
 {
 	vector< pair<string, double> > results;
-	set< pair<double, string>> averages;
+	set< pair<double, string> > averages;
 	vector<Point> contour;
 	vector<double> coeffs;
-	set< pair<double, string>>::iterator iter;
+	set< pair<double, string> >::iterator iter;
 	Mat imgBW;
 	string className;
 	set< string> usedNames;
@@ -70,7 +82,7 @@ void MinimumDistanceClassifier::learn(map< string, vector<Mat> >& learningData, 
 
 vector<Point> MinimumDistanceClassifier::findMatContours(Mat& bin) 
 {
-	vector<vector<Point>> contours;
+	vector<vector<Point> > contours;
 	Mat frame = bin.clone();
 	int max = 0;
 
@@ -124,9 +136,9 @@ void MinimumDistanceClassifier::calculateGranlundCoefficients(vector<Point> cont
 	coeffs.push_back(imagDmn);
 }
 
-void MinimumDistanceClassifier::calculateDistance(set< pair<double, string>>& averages, vector<double> coeffs)
+void MinimumDistanceClassifier::calculateDistance(set< pair<double, string> >& averages, vector<double> coeffs)
 {
-	map< string, vector< vector<double>> >::iterator iter;
+	map< string, vector< vector<double> > >::iterator iter;
 	double sum = 0.0;
 	double diff;
 	int i = 0, j = 0;
@@ -141,7 +153,7 @@ void MinimumDistanceClassifier::calculateDistance(set< pair<double, string>>& av
 				sum += diff;
 			}
 
-			string name = iter->first + to_string((long long) i);
+			string name = iter->first + longToStr((long long) i);
 			sum /= j;
 			averages.insert(make_pair(sum, name));
 			sum = 0.0;
