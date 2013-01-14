@@ -17,10 +17,16 @@ siluete/ i slike/   - baza
 src/                - izvorni kod
 
 
+Ovisnosti
+=========
+- OpenCV
+- pkg-config
+
+
 Upute za pokretanje programa
 ============================
 
-Program je razvijen za operacijski sustav Linux. Potrebno je imati instaliran OpenCV.
+Program je razvijen za operacijski sustav Linux (testirano na Ubuntu). Potrebno je imati instaliran OpenCV.
 Kako biste preveli program i stvorili izvršnu datoteku, napravite sljedeće korake:
 
 1.  Pozicionirajte se direktorij demo/ :
