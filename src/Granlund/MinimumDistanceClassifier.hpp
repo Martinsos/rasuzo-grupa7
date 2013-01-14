@@ -1,7 +1,7 @@
 #ifndef MINIMUM_DISTANCE_CLASSIFIER_HPP
 #define MINIMUM_DISTANCE_CLASSIFIER_HPP
 
-#include "../testing/Classifier.hpp"
+#include "Classifier.hpp"
 #include <set>
 #include <math.h>
 
@@ -29,10 +29,11 @@ public:
 	void learn(map< string, vector<Mat> >& learningData, void* param);
 
 private:
-	/**
-	 * Granlund coefficients of images in training set
-	 */
+	/** Granlund coefficients of images in training set */
 	map< string, vector< vector<double> > > GranlundCoefficients;
+
+	/** Granlund coefficient parameters */
+	int coeffIndexes[40];
 
 	/** Finds contours from binary silhuette image
 	 *
@@ -68,4 +69,3 @@ private:
 };
 
 #endif // MINIMUM_DISTANCE_CLASSIFIER_HPP
-

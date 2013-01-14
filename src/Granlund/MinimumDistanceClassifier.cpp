@@ -1,15 +1,9 @@
-#ifdef WIN32
-    #include "StdAfx.h"
-#endif
-
 #include "MinimumDistanceClassifier.hpp"
 #include <complex>
 #include <sstream>
 #include <math.h>
 
 #define PI 3.14159265
-
-int coeffIndexes[] = {1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 2, 2, 3, 2}; // Granlund coefficient parameters
 
 string longToStr(long long a)
 {
@@ -29,7 +23,7 @@ vector< pair<string, double> > MinimumDistanceClassifier::classify(Mat img, int 
 	Mat imgBW;
 	string className;
 	set< string> usedNames;
-	
+
 	cvtColor(img, imgBW, CV_BGR2GRAY);
 	contour = findMatContours(imgBW);
 
@@ -52,7 +46,7 @@ vector< pair<string, double> > MinimumDistanceClassifier::classify(Mat img, int 
 		}
 		++iter;
 	}
-	
+
 	return results;
 }
 
@@ -61,6 +55,18 @@ void MinimumDistanceClassifier::learn(map< string, vector<Mat> >& learningData, 
 	map< string, vector<Mat> >::iterator classId;
 	vector<Point> contour;
 	Mat img;
+
+	// choosing Granlund coefficient parameters
+	int index = 0;
+	for (int i = 1; i <= 5; i++)
+	{
+		for (int j = 2; j <= 5; j++) 
+		{
+			coeffIndexes[index] = i;
+			coeffIndexes[index + 1] = j;
+			index = index + 2;
+		}
+	}
 
 	for (classId = learningData.begin(); classId != learningData.end(); ++classId) 
 	{
