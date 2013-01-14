@@ -1,16 +1,24 @@
 RELATIVE_PATH_TO_CLASSIFIER=../testing/
 RELATIVE_PATH_TO_ADAPTERS=../Classifiers/
+RELATIVE_PATH_TO_SILHOUETTE_EXTRACTION=../silhouette_extraction/
 
 RPTC=$(RELATIVE_PATH_TO_CLASSIFIER)
+RPTSE=$(RELATIVE_PATH_TO_SILHOUETTE_EXTRACTION)
 OPENCVLIBS=`pkg-config --libs opencv`
 AP=$(RELATIVE_PATH_TO_ADAPTERS)
 OBJFILES=HWMatching.o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o AbstractAdapter.o
 
 
-all: demo
+all: demo silhouetteExtraction
 
 demo: demoMain.cpp $(OBJFILES)
 		g++ demoMain.cpp $(OBJFILES) -o demo ${OPENCVLIBS}
+		
+silhouetteExtraction: $(RPTSE)main.cpp silhouetteExtraction.o
+		g++ -o silhouetteExtraction $(RPTSE)main.cpp silhouetteExtraction.o ${OPENCVLIBS}
+
+silhouetteExtraction.o: $(RPTSE)silhouetteExtraction.cpp $(RPTSE)silhouetteExtraction.hpp
+		g++ -c $(RPTSE)silhouetteExtraction.cpp -o silhouetteExtraction.o ${OPENCVLIBS}
 
 
 Classifier.o: $(RPTC)Classifier.cpp $(RPTC)Classifier.hpp
