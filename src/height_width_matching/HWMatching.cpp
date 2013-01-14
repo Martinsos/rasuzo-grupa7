@@ -33,6 +33,7 @@ vector <int> heights;
 vector <int> widths;
 int maxWidth, maxHeight; //though it can be extracted from heights&widths
 int headHeight, shouldersWidth;
+int useHeightDivision;
 
 struct Example {
   // featureName -> featureValue
@@ -61,13 +62,16 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
   Mat testMat = img.t();
   Example testExample;
   getFeatures( testMat );
-  
+ 
+  double hh = getMaxHeight();
+  if(!useHeightDivision) hh = 1;
+ 
   vector <float> adapterExamples;
-  adapterExamples.push_back( getHeadHeight() );
-  adapterExamples.push_back( getHeadWidth() );
-  adapterExamples.push_back( getMaxHeight() );
-  adapterExamples.push_back( getMaxWidth() );
-  adapterExamples.push_back( getShouldersWidth() );
+  adapterExamples.push_back( getHeadHeight() / hh );
+  adapterExamples.push_back( getHeadWidth() / hh );
+  adapterExamples.push_back( getMaxHeight() / hh );
+  adapterExamples.push_back( getMaxWidth() / hh );
+  adapterExamples.push_back( getShouldersWidth() / hh );
 
   if( classifyMethod == "bayes" ) {
     ret.push_back( make_pair( adapter->classify( adapterExamples ), 1 ) );
@@ -79,11 +83,11 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
     ret.push_back( make_pair( knnAdapter->classify( adapterExamples ), 1 ) );
     return ret;
   }
-  testExample.features[ K_HEAD_HEIGHT ] = getHeadHeight();
-  testExample.features[ K_HEAD_WIDTH ] = getHeadWidth();
-  testExample.features[ K_MAX_HEIGHT ] = getMaxHeight();
-  testExample.features[ K_MAX_WIDTH ] = getMaxWidth();
-  testExample.features[ K_SHOULDERS_WIDTH ] = getShouldersWidth();
+  testExample.features[ K_HEAD_HEIGHT ] = getHeadHeight() / hh;
+  testExample.features[ K_HEAD_WIDTH ] = getHeadWidth() / hh;
+  testExample.features[ K_MAX_HEIGHT ] = getMaxHeight() / hh;
+  testExample.features[ K_MAX_WIDTH ] = getMaxWidth() / hh;
+  testExample.features[ K_SHOULDERS_WIDTH ] = getShouldersWidth() / hh;
     
   vector < pair<double, string> > error;
   for( int i = 0; i < learningSet.size(); i++ ) {
@@ -118,14 +122,15 @@ vector< pair<string, double> > HWMatching::classify(Mat img, int resNum) {
 
 void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
 
-  string method = *((string *)param);  
-  classifyMethod = method;
+  pair<string, bool> method = *((pair<string, bool> *)param);  
+  classifyMethod = method.first;
+  useHeightDivision = method.second;
 
-  if( method == "bayes" ) {
+  if( classifyMethod == "bayes" ) {
     adapter = new BayesAdapter;
-  } else if( method == "svm" ) {
+  } else if( classifyMethod == "svm" ) {
     svmAdapter = new SVMAdapter;
-  } else if( method == "knn" ) {
+  } else if( classifyMethod == "knn" ) {
     knnAdapter = new KNNAdapter;
   } 
 
@@ -147,19 +152,22 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
       Example current;
       current.name = realClassId;
 
-      current.features[ K_HEAD_HEIGHT ] = getHeadHeight();
-      current.features[ K_HEAD_WIDTH ] = getHeadWidth();
-      current.features[ K_MAX_HEIGHT ] = getMaxHeight();
-      current.features[ K_MAX_WIDTH ] = getMaxWidth(); 
-      current.features[ K_SHOULDERS_WIDTH ] = getShouldersWidth();
+      double hh = getMaxHeight();
+      if(!useHeightDivision) hh = 1;
 
-      if( method != "" ) {
+      current.features[ K_HEAD_HEIGHT ] = getHeadHeight() / hh;
+      current.features[ K_HEAD_WIDTH ] = getHeadWidth() / hh;
+      current.features[ K_MAX_HEIGHT ] = getMaxHeight() / hh;
+      current.features[ K_MAX_WIDTH ] = getMaxWidth() / hh; 
+      current.features[ K_SHOULDERS_WIDTH ] = getShouldersWidth() / hh;
+
+      if( classifyMethod != "" ) {
         vector<float> v;
-        v.push_back( getHeadHeight() );
-        v.push_back( getHeadWidth() );
-        v.push_back( getMaxHeight() );
-        v.push_back( getMaxWidth() );
-        v.push_back( getShouldersWidth() );
+        v.push_back( getHeadHeight() / hh );
+        v.push_back( getHeadWidth() / hh);
+        v.push_back( getMaxHeight() / hh);
+        v.push_back( getMaxWidth() / hh);
+        v.push_back( getShouldersWidth() / hh);
         adapterExamples.push_back( v );
         adapterLabels.push_back( realClassId );
       }
@@ -169,11 +177,11 @@ void HWMatching::learn(map< string, vector<Mat> >& learningData, void* param) {
     }
   }
 
-  if( method == "bayes" ) {
+  if( classifyMethod == "bayes" ) {
     adapter->train( adapterExamples, adapterLabels );
-  } else if( method == "svm" ) {
+  } else if( classifyMethod == "svm" ) {
     svmAdapter->train( adapterExamples, adapterLabels );
-  } else if( method == "knn" ) {
+  } else if( classifyMethod == "knn" ) {
     knnAdapter->train( adapterExamples, adapterLabels );
   }
 
