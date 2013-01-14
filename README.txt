@@ -27,7 +27,10 @@ Upute za pokretanje programa
 ============================
 
 Program je razvijen za operacijski sustav Linux (testirano na Ubuntu). Potrebno je imati instaliran OpenCV.
-Kako biste preveli program i stvorili izvršnu datoteku, napravite sljedeće korake:
+Priložene izvršne datoteke prevedene su s OpenCV 2.3.1 na sustavu Ubuntu 12.04 LTS x86_64.                                                
+Ukoliko se vaš sustav razlikuje, moguće je da ćete morati sami stvoriti svoje izvršne datoteke.
+
+Kako biste preveli program i stvorili izvršne datoteke, napravite sljedeće korake:
 
 1.  Pozicionirajte se direktorij demo/ :
 
