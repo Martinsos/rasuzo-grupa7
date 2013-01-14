@@ -79,7 +79,6 @@ void extractSilhouetteRGBMax(Mat& img, Mat& bkg, Mat& binary, int blurf1, int bl
     Mat diff_, diff;
     max(diffsBl[0], diffsBl[1], diff_);
     max(diffsBl[2], diff_, diff);
-    imshow("diffMax", diff);
     // find median
     unsigned char median = medianBW(diff);
 
@@ -128,7 +127,6 @@ void extractSilhouetteRGBSum(Mat& img, Mat& bkg, Mat& binary, int blurf1, int bl
        
     // alternative: take sum of RGB differences for each pixel
     Mat diff = (diffsBl[0]) + (diffsBl[1]) + (diffsBl[2]);
-    imshow("diffSum", diff);
     // find median
     double median = medianBW(diff);
 

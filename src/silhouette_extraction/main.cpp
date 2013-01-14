@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     if (argc == 4) {// if third argument is given, write silhouette to file.
 	extractSilhouetteRGBSum(a, b, bin, blurf1, blurf2, thresh, false);
 	imwrite(argv[3], bin);
-    } else {// if third argument is not given, display GUI.
+    } else {// if third argument is not given, display GUI. Write silhouette to file when over.
 	namedWindow("Slika", CV_WINDOW_AUTOSIZE);
 	imshow("Slika", a);  
 	createTrackbar( "blur1", "Slika", &blurf1, 20, thresh_callback);
@@ -45,13 +45,16 @@ int main(int argc, char** argv) {
 	createTrackbar( "thresh", "Slika", &thresh, 255, thresh_callback);
 	thresh_callback( 0, 0 );
 	waitKey(0);
+	imwrite("silhouette.jpg", bin);
     }
 
     return 0;
 }
 
 void thresh_callback(int, void* ) {
+    if (blurf1 < 1) blurf1 = 1;
+    if (blurf2 < 1) blurf2 = 1;
     extractSilhouetteRGBSum(a, b, bin, blurf1, blurf2, thresh, false);
-    namedWindow("SiluetaSum", CV_WINDOW_AUTOSIZE);
-    imshow("SiluetaSum", bin);    
+    namedWindow("Silueta", CV_WINDOW_AUTOSIZE);
+    imshow("Silueta", bin);    
 }
