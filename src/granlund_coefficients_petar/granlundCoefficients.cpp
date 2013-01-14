@@ -7,7 +7,6 @@
 #include "granlundCoefficients.hpp"
 #include "granlundClassifiers.hpp"
 #include "../testing/Classifier.hpp"
-#include "../Classifiers/BayesAdapter.hpp"
 
 using namespace std;
 using namespace cv;
@@ -82,15 +81,15 @@ vector <complex <double> > granlundCoefficients(vector <Point> contour) {
         a[cof[k]] = complex <double> (sum_r,sum_i);
     }
 
-    // Granlund coefficients - uncomment to apply
+    // Granlund coefficients - uncomment to apply - comment to remove
     gran_cof_internal.push_back((pow(a[2],2) * pow(a[-1],1)) / pow(a[1],3)); // m=1, n=2
-//    gran_cof_internal.push_back((pow(a[3],2) * pow(a[-1],2)) / pow(a[1],4)); // m=2, n=2
-//    gran_cof_internal.push_back((pow(a[3],3) * pow(a[-2],2)) / pow(a[1],5)); // m=2, n=3
-//    gran_cof_internal.push_back((pow(a[3],4) * pow(a[-3],2)) / pow(a[1],6)); // m=2, n=4
-//    gran_cof_internal.push_back((pow(a[3],5) * pow(a[-4],2)) / pow(a[1],6)); // m=2, n=5
-//    gran_cof_internal.push_back((pow(a[4],3) * pow(a[-2],3)) / pow(a[1],6)); // m=3, n=3
-//    gran_cof_internal.push_back((pow(a[5],3) * pow(a[-2],4)) / pow(a[1],7)); // m=4, n=3
-//    gran_cof_internal.push_back((pow(a[5],4) * pow(a[-3],4)) / pow(a[1],8)); // m=4, n=4
+    gran_cof_internal.push_back((pow(a[3],2) * pow(a[-1],2)) / pow(a[1],4)); // m=2, n=2
+    gran_cof_internal.push_back((pow(a[3],3) * pow(a[-2],2)) / pow(a[1],5)); // m=2, n=3
+    gran_cof_internal.push_back((pow(a[3],4) * pow(a[-3],2)) / pow(a[1],6)); // m=2, n=4
+    gran_cof_internal.push_back((pow(a[3],5) * pow(a[-4],2)) / pow(a[1],6)); // m=2, n=5
+    gran_cof_internal.push_back((pow(a[4],3) * pow(a[-2],3)) / pow(a[1],6)); // m=3, n=3
+    gran_cof_internal.push_back((pow(a[5],3) * pow(a[-2],4)) / pow(a[1],7)); // m=4, n=3
+    gran_cof_internal.push_back((pow(a[5],4) * pow(a[-3],4)) / pow(a[1],8)); // m=4, n=4
 
     return gran_cof_internal;
 }
@@ -98,18 +97,23 @@ vector <complex <double> > granlundCoefficients(vector <Point> contour) {
 int main(int argc, char** argv) {
     int wrongs;
 
-    Classifier* bay = new BayesClassifier();
     Classifier* dis = new DistanceClassifier();
-    Classifier* svm  = new SVMClassifier();
+    Classifier* bay = new SpecificClassifier();
+    Classifier* svm  = new SpecificClassifier();
+    Classifier* knn  = new SpecificClassifier();
+    Classifier* rfa  = new SpecificClassifier();
 
-    wrongs = bay ->test("testConfSample.txt", 1, "../../siluete/","sampleReportBayes.html");
-    cout << wrongs << endl;
+    wrongs = dis ->test("testConfFull.txt", 3, "../../siluete/","sampleReportDistance.html");
+    cout << "Distance classifier wrongs: " << wrongs << endl;
 
-    wrongs = dis ->test("testConfSample.txt", 3, "../../siluete/","sampleReportDistance.html");
-    cout << wrongs << endl;
+    wrongs = bay ->test("testConfFull.txt", 1, "../../siluete/","sampleReportBayes.html",new BayesAdapter);
+    cout << "Bayes classifier wrongs: " << wrongs << endl;
 
-    wrongs = svm ->test("testConfSample.txt", 1, "../../siluete/","sampleReportSVM.html");
-    cout << wrongs << endl;
+    wrongs = svm ->test("testConfFull.txt", 1, "../../siluete/","sampleReportSVM.html",new SVMAdapter);
+    cout << "SVM classifier wrongs: " << wrongs << endl;
+
+    wrongs = rfa ->test("testConfFull.txt", 1, "../../siluete/","sampleReportRFA.html",new RandomForestAdapter);
+    cout << "Random forrest classifier wrongs: " << wrongs << endl;
 
     return 0;
 }

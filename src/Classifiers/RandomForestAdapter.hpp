@@ -1,5 +1,5 @@
-#ifndef BAYESADAPTER_HPP
-#define BAYESADAPTER_HPP
+#ifndef RANDOMFORESTADAPTER_HPP
+#define RANDOMFORESTADAPTER_HPP
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
@@ -14,9 +14,9 @@ using namespace std;
 using namespace cv;
 
 
-class BayesAdapter : public AbstractAdapter {
+class RandomForestAdapter : AbstractAdapter {
 private:
-    CvNormalBayesClassifier bayes;
+    CvRTrees rf;
 
 public:
     virtual void train (vector< vector<float> >& examples, vector<string>& labels);
@@ -24,4 +24,4 @@ public:
     virtual string classify(vector<float>& example);
 };
 
-#endif // BAYESADAPTER_HPP
+#endif // RANDOMFORESTADAPTER_HPP

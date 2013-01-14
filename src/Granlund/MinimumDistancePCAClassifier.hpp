@@ -5,7 +5,7 @@
 #include <set>
 #include <math.h>
 
-class MinimumDistanceClassifier :
+class MinimumDistancePCAClassifier :
 	public Classifier
 {
 public:
@@ -29,11 +29,20 @@ public:
 	void learn(map< string, vector<Mat> >& learningData, void* param);
 
 private:
-	/** Granlund coefficients of images in training set */
-	map< string, vector< vector<double> > > GranlundCoefficients;
-
 	/** Granlund coefficient parameters */
 	int coeffIndexes[40];
+
+	/** Matrix of Granlund coefficients for every example, used for PCA */
+	Mat pcaCoeffs;
+
+	/** Matrix of all examples after PCA */
+	Mat features;
+
+	/** Eigenvectors created by PCA */
+	Mat eigenvectors;
+
+	/** Image index + image name */
+	map< int, string> classNames;
 
 	/** Finds contours from binary silhuette image
 	 *
@@ -57,15 +66,14 @@ private:
 	 * @param	averages	Average distance for every pair (training image, test image)
 	 * @param	coeffs		Test image Granlund coefficients
 	 */
-	void calculateDistance(set< pair<double, string> >& averages, vector<double> coeffs);
+	void calculateDistancePCA(set< pair<double, string>>& averages, Mat coeffs);
 
-	/** Removes silx_ from image name
+	/** Performs PCA
 	 *
-	 * @param	id		Name before modification
-
-	 * @returns			Modified name
+	 * @param	numComponents	number of features after PCA
 	 */
-	string makeClassId(string id);
+	void performPCA(int numComponents);
 };
 
 #endif // MINIMUM_DISTANCE_CLASSIFIER_HPP
+

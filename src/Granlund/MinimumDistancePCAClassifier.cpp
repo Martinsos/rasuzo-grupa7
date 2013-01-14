@@ -1,29 +1,21 @@
-#include "MinimumDistanceClassifier.hpp"
-#include <complex>
-#include <sstream>
-#include <math.h>
+#include "StdAfx.h"
+#include "MinimumDistancePCAClassifier.hpp"
+#include<complex>
+#include<math.h>
 
 #define PI 3.14159265
 
-string longToStr(long long a)
-{
-    stringstream ss;
-    ss << a;
-
-    return ss.str();
-}
-
-vector< pair<string, double> > MinimumDistanceClassifier::classify(Mat img, int resNum) 
+vector< pair<string, double> > MinimumDistancePCAClassifier::classify(Mat img, int resNum) 
 {
 	vector< pair<string, double> > results;
-	set< pair<double, string> > averages;
+	set< pair<double, string>> averages;
 	vector<Point> contour;
 	vector<double> coeffs;
-	set< pair<double, string> >::iterator iter;
+	set< pair<double, string>>::iterator iter;
 	Mat imgBW;
 	string className;
 	set< string> usedNames;
-
+	
 	cvtColor(img, imgBW, CV_BGR2GRAY);
 	contour = findMatContours(imgBW);
 
@@ -32,29 +24,34 @@ vector< pair<string, double> > MinimumDistanceClassifier::classify(Mat img, int 
 		calculateGranlundCoefficients(contour, coeffIndexes[i], coeffIndexes[i + 1], coeffs);
 	}
 
-	calculateDistance(averages, coeffs);
+	Mat_<double> matrix(coeffs, true);
+	Mat testFeature = eigenvectors * matrix;
+	testFeature = testFeature.t();
+	calculateDistancePCA(averages, testFeature);
 
 	// getting best results
 	iter = averages.begin();
 	while (results.size() < resNum) 
 	{
-		className = makeClassId(iter->second);		
+		className = iter->second;
 		if (usedNames.find(className) == usedNames.end()) 
 		{
 			results.push_back(make_pair(className, iter->first));
 			usedNames.insert(className);
+			
 		}
 		++iter;
 	}
-
+	
 	return results;
 }
 
-void MinimumDistanceClassifier::learn(map< string, vector<Mat> >& learningData, void* param) 
+void MinimumDistancePCAClassifier::learn(map< string, vector<Mat> >& learningData, void* param) 
 {
 	map< string, vector<Mat> >::iterator classId;
 	vector<Point> contour;
 	Mat img;
+	int numComponents = 15;
 
 	// choosing Granlund coefficient parameters
 	int index = 0;
@@ -81,14 +78,19 @@ void MinimumDistanceClassifier::learn(map< string, vector<Mat> >& learningData, 
 				calculateGranlundCoefficients(contour, coeffIndexes[i], coeffIndexes[i + 1], coeffs);
 			}
 
-			GranlundCoefficients[classId->first].push_back(coeffs);
+			classNames[pcaCoeffs.rows] = classId->first;
+			Mat_<double> matrix(coeffs, true);
+			matrix = matrix.t();
+			pcaCoeffs.push_back(matrix);		
 		}
 	}
+
+	performPCA(numComponents);
 }
 
-vector<Point> MinimumDistanceClassifier::findMatContours(Mat& bin) 
+vector<Point> MinimumDistancePCAClassifier::findMatContours(Mat& bin) 
 {
-	vector<vector<Point> > contours;
+	vector<vector<Point>> contours;
 	Mat frame = bin.clone();
 	int max = 0;
 
@@ -106,7 +108,7 @@ vector<Point> MinimumDistanceClassifier::findMatContours(Mat& bin)
 	return contours[max];
 }
 
-void MinimumDistanceClassifier::calculateGranlundCoefficients(vector<Point> contour, int m, int n, 
+void MinimumDistancePCAClassifier::calculateGranlundCoefficients(vector<Point> contour, int m, int n, 
 	vector<double>& coeffs) 
 {
 	double realAm = 0.0, imagAm = 0.0, realAn = 0.0, imagAn = 0.0, realAone = 0.0, imagAone = 0.0;
@@ -142,39 +144,35 @@ void MinimumDistanceClassifier::calculateGranlundCoefficients(vector<Point> cont
 	coeffs.push_back(imagDmn);
 }
 
-void MinimumDistanceClassifier::calculateDistance(set< pair<double, string> >& averages, vector<double> coeffs)
+void MinimumDistancePCAClassifier::calculateDistancePCA(set< pair<double, string>>& averages, Mat coeffs)
 {
-	map< string, vector< vector<double> > >::iterator iter;
-	double sum = 0.0;
 	double diff;
+	double sum = 0.0;
 	int i = 0, j = 0;
 
-	for (iter = GranlundCoefficients.begin(); iter != GranlundCoefficients.end(); ++iter) 
-	{ // for every person
-		for (i = 0; i < (int) iter->second.size(); i++) 
-		{ // for every image of that person
-			for (j = 0; j < (int) iter->second[i].size(); j++) 
-			{ // for every element of Granlund coefficients
-				diff = abs(iter->second.at(i).at(j) - coeffs.at(j));
-				sum += diff;
-			}
-
-			string name = iter->first + longToStr((long long) i);
-			sum /= j;
-			averages.insert(make_pair(sum, name));
-			sum = 0.0;
+	for (i = 0; i < features.rows; i++) 
+	{
+		for (j = 0; j < features.cols; j++) 
+		{
+			diff = abs(features.at<double>(i, j) - coeffs.at<double>(0, j));
+			sum += diff;
 		}
+
+		sum /= j;
+		averages.insert(make_pair(sum, classNames[i]));
+		sum = 0.0;
 	}
 }
 
-string MinimumDistanceClassifier::makeClassId(string id) 
+void MinimumDistancePCAClassifier::performPCA(int numComponents) 
 {
-	string name;
-	int index;
+	PCA pca(pcaCoeffs, Mat(), CV_PCA_DATA_AS_ROW, numComponents);
 
-	name = id;
-	index = name.size();
-	name.erase(index - 1, 1);
+	Mat mean = pca.mean.clone();
+	Mat eigenvalues = pca.eigenvalues.clone();
+	eigenvectors = pca.eigenvectors.clone();
 
-	return name;
+	Mat t_pcaCoeffs = pcaCoeffs.t();
+	features = eigenvectors * t_pcaCoeffs;
+	features = features.t();
 }

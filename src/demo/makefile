@@ -6,7 +6,7 @@ RPTC=$(RELATIVE_PATH_TO_CLASSIFIER)
 RPTSE=$(RELATIVE_PATH_TO_SILHOUETTE_EXTRACTION)
 OPENCVLIBS=`pkg-config --libs opencv`
 AP=$(RELATIVE_PATH_TO_ADAPTERS)
-OBJFILES=Granlund.o HWMatching.o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o AbstractAdapter.o
+OBJFILES=Granlund.o HWMatching.o Classifier.o BayesAdapter.o SVMAdapter.o KNNAdapter.o RandomForestAdapter.o AbstractAdapter.o
 
 
 all: demo silhouetteExtraction
@@ -47,6 +47,9 @@ SVMAdapter.o: $(AP)SVMAdapter.cpp $(AP)SVMAdapter.hpp
 
 KNNAdapter.o: $(AP)KNNAdapter.cpp $(AP)KNNAdapter.hpp
 		g++ -c $(AP)KNNAdapter.cpp -o KNNAdapter.o ${OPENCVLIBS}
+
+RandomForestAdapter.o: $(AP)RandomForestAdapter.cpp $(AP)RandomForestAdapter.hpp
+		g++ -c $(AP)RandomForestAdapter.cpp -o RandomForestAdapter.o ${OPENCVLIBS}
 
 AbstractAdapter.o: $(AP)AbstractAdapter.cpp $(AP)AbstractAdapter.hpp
 		g++ -c $(AP)AbstractAdapter.cpp -o AbstractAdapter.o ${OPENCVLIBS}

@@ -14,7 +14,7 @@ using namespace std;
 using namespace cv;
 
 
-class KNNAdapter : AbstractAdapter {
+class KNNAdapter : public AbstractAdapter {
 private:
     CvKNearest knn;
     int k;

@@ -6,7 +6,7 @@ int main(int argc, char const *argv[] )
     Classifier* sampleCl = new HWMatching();
 
     // pair< method_type, use_height_ratio >, example: < "knn", 1 >
-    pair<string, bool> method = make_pair( "", false );
+    pair<string, bool> method = make_pair( "random_forest", false );
 
     // Count wrong classifications
     int wrongs = sampleCl->test("testConfFull.txt", 1, "../../siluete/", "sampleReport.html", &method);
