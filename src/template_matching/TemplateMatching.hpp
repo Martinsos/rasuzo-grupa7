@@ -22,7 +22,7 @@ public:
 private:
 	vector<Mat> templateImages;
 
-	map< int, string > classNames;
+	vector<string> classNames;
 
 	CvPoint findCenter(Mat image);
 

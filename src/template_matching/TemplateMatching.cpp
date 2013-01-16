@@ -6,28 +6,40 @@ using namespace cv;
 
 vector< pair<string, double> > TemplateMatching::classify(Mat img, int resNum)
 {
+
 	vector< pair < string,double> > results;
+
 	string className;
 	set <string> usedNames;
-	Mat temporaryBW, temporary;
+	Mat temporaryBW, temporary, testImage;
 	vector<double> values;
 	int closestImage;
 	CvPoint center;
-	set<pair<double, string> > averages;
+	vector<pair<string, double> > averages;
 	set<pair<double,string> >::iterator iter;
-	for(int i=0;i<(int)templateImages.size();i++){
-		cvtColor(templateImages[i],temporaryBW,CV_BGR2GRAY);
 
-		center=findCenter(temporaryBW);
-		temporary=adjustByCenter(temporaryBW,center);
-		values.push_back(matching(temporary,img));
+        cvtColor(img, temporaryBW, CV_BGR2GRAY);
+
+        center=findCenter(temporaryBW);
+        testImage=adjustByCenter(temporaryBW, center);
+
+        cout << "skup slika: " << templateImages.size() << endl;
+        
+	for(int i=0;i<(int)templateImages.size();i++){
+
+                double match = matching(templateImages[i], testImage);
+                cout << match << endl;
+
+		values.push_back(matching(templateImages[i], testImage));
 	}
+        
+        cout << "velicina rezultata: " << values.size() << endl;
 	
 	double max=0;
 	for(int k=0;k<resNum;++k)
 	{
 		max=0;
-		for(int i=0;i<(int)values.size();++i)
+		for(int i=0;i<(int)values.size();++i)   
 		{
 			if(values.at(i)>max)
 			{
@@ -35,9 +47,16 @@ vector< pair<string, double> > TemplateMatching::classify(Mat img, int resNum)
 				closestImage=i;
 			}
 		}
-		averages.insert(make_pair(values[closestImage],classNames[closestImage]));
+                // cout << "ubacujem: " << values[closestImage] << " " << classNames[closestImage] << endl;
+		averages.push_back(make_pair(classNames[closestImage],values[closestImage]));
 		values[closestImage]=-1;
+
+                cout << "idx maximalnog je: " << closestImage << endl;
 	}
+        
+        /*
+        iter = averages.begin();
+        // cout << "Velicina averagesa: " << averages.size() << endl;
 	while ((int)results.size() < resNum)
 	{
 		className = iter->second;
@@ -48,31 +67,44 @@ vector< pair<string, double> > TemplateMatching::classify(Mat img, int resNum)
 		}
 		++iter;
 	}
+        */
+        
+
+        //results.push_back(make_pair("sil0_ivana", 0.97));
+        return averages;
 }
 
 void TemplateMatching::learn(map < string, vector<Mat> >& learningData, void* param)
 {
+        
 	map < string, vector<Mat> >:: iterator classId;
-	Mat temporaryBW, temporary;
 	set<pair<double, string> > averages;
 	CvPoint center;
 
 	for(classId = learningData.begin(); classId != learningData.end();++classId)
 	{
-		classNames[(int) classId->second.size()] = classId->first;
+                cout << "Ucim na: " << classId->first << endl;
 		for(int picture = 0; picture < (int) classId->second.size();++picture )
 		{
+                        classNames.push_back(classId->first);
 			
-			cvtColor(classId->second.at(picture),temporaryBW,CV_BGR2GRAY);
+                        Mat img = classId->second[picture];
+	                Mat temporaryBW, temporary;
+
+
+
+                        // img = img.t();
+			cvtColor(img, temporaryBW, CV_BGR2GRAY);
 
 			center=findCenter(temporaryBW);
 			temporary=adjustByCenter(temporaryBW,center);
 			
 			templateImages.push_back(temporary);
-			
 		}
 	}
-
+        
+        // cout << "jesu li isti: " << templateImages[0] == templateImages[30] << endl;
+        cout << "ucenje proslo!" << endl;
 }
 
 double TemplateMatching::matching(Mat image, Mat testImage)
@@ -88,7 +120,6 @@ double TemplateMatching::matching(Mat image, Mat testImage)
 		  }
 	}
    return countMatch/(rows*cols);
- 
 }
 
 CvPoint TemplateMatching::findCenter(Mat image)
@@ -111,5 +142,6 @@ CvPoint TemplateMatching::findCenter(Mat image)
 
 Mat TemplateMatching::adjustByCenter(Mat image, CvPoint center)
 {
-	return image(Range(center.x-485,center.x+495),Range(center.y-195,center.y+195));
+        // return image(Range(center.x-485,center.x+495),Range(center.y-195,center.y+195));
+        return image;
 }

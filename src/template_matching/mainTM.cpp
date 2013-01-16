@@ -7,7 +7,7 @@ int main(int argc, char const *argv[])
     Classifier* tmCl = new TemplateMatching();
     
     // Count wrong classifications
-    int wrongs = tmCl->test("../testing/testConfFull.txt", 2, "../../siluete/", "PCAReport.html");
+    int wrongs = tmCl->test("../testing/testConfFull.txt", 5, "../../siluete/", "TMReport.html");
 
     // VAZNO!!
     // Vazno je da path do silueta na kraju ima ovaj slash (ili backslash, ovisno o OS), inace vam nece raditi.
