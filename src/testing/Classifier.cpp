@@ -415,5 +415,8 @@ string Classifier::classifResultsToHTML(ClassifResults& clRes, int resNum)
         HTMLrep += "</tr>\n";
     }
 
+    // Print closing stuff
+    HTMLrep += "</table>";
+
     return HTMLrep;
 }
